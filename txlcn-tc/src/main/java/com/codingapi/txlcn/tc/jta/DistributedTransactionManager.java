@@ -5,8 +5,10 @@ import com.codingapi.txlcn.tc.core.DTXLocalContext;
 import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
 import com.codingapi.txlcn.tc.core.template.TransactionControlTemplate;
 import com.codingapi.txlcn.tracing.TracingContext;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionStatus;
 
 import javax.transaction.*;
 
@@ -17,6 +19,7 @@ import javax.transaction.*;
  * @author ujued
  */
 @Component
+@Slf4j
 public class DistributedTransactionManager implements TransactionManager {
 
     private final TCGlobalContext globalContext;
@@ -30,62 +33,58 @@ public class DistributedTransactionManager implements TransactionManager {
     }
 
     public void begin() throws NotSupportedException, SystemException {
-        // original branch transaction send tx message to TM
+        log.info("original branch transaction send tx message to TM");
         try {
-            transactionControlTemplate.createGroup(TracingContext.tracing().groupId(), DTXLocalContext.cur().getUnitId(), null, "");
+            transactionControlTemplate.createGroup(TracingContext.tracing().groupId(),
+                    DTXLocalContext.cur().getUnitId(), null, DTXLocalContext.cur().getTransactionType());
         } catch (TransactionException e) {
             throw new SystemException(e.getMessage());
         }
-        System.out.println("TM begin");
     }
 
     public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
-        // original branch transaction send tx message to TM
-        transactionControlTemplate.notifyGroup(TracingContext.tracing().groupId(), DTXLocalContext.cur().getUnitId(), "", 1);
-        System.out.println("TM commit");
+        log.info("original branch transaction send tx message to TM");
+        transactionControlTemplate.notifyGroup(TracingContext.tracing().groupId(), DTXLocalContext.cur().getUnitId(),
+                DTXLocalContext.cur().getTransactionType(), 1);
     }
 
     public int getStatus() throws SystemException {
-        // DTX status
-        System.out.println("TM getStatus");
+        log.info("TransactionManager getStatus.");
         return DTXLocalContext.transactionState(globalContext.dtxState(TracingContext.tracing().groupId()));
     }
 
     public Transaction getTransaction() throws SystemException {
-        // todo get DistributedTransaction
-        System.out.println("TM getTransaction");
-        return null;
+        throw new UnsupportedOperationException("unsupported getTransaction.");
     }
 
     public void resume(Transaction transaction) throws InvalidTransactionException, IllegalStateException, SystemException {
-        System.out.println("TM resume");
-        // original branch transaction send tx message to TM, resume DistributedTransaction
+        throw new UnsupportedOperationException("unsupported resume.");
     }
 
     public void rollback() throws IllegalStateException, SecurityException, SystemException {
         System.out.println("TM rollback");
-        // original branch transaction send tx message to TM, rollback DistributedTransaction
-        transactionControlTemplate.notifyGroup(TracingContext.tracing().groupId(), DTXLocalContext.cur().getUnitId(), "", 0);
+        transactionControlTemplate.notifyGroup(TracingContext.tracing().groupId(),
+                DTXLocalContext.cur().getUnitId(), "", 0);
     }
 
     public void setRollbackOnly() throws IllegalStateException, SystemException {
-        System.out.println("TM setRollbackOnly");
-        // original branch transaction send tx message to TM , dtx rollback only
+        throw new UnsupportedOperationException("unsupported setRollbackOnly.");
     }
 
     public void setTransactionTimeout(int i) throws SystemException {
-        System.out.println("TM setTransactionTimeout");
-
-        // original branch transaction send tx message to TM, set dtx timeout
+        throw new UnsupportedOperationException("unsupported setTransactionTimeout.");
     }
 
     public Transaction suspend() throws SystemException {
-        System.out.println("TM suspend");
-        //
-        return null;
+        throw new UnsupportedOperationException("unsupported suspend.");
     }
 
-    public void associateTransaction() throws SystemException, NotSupportedException {
+    public TransactionStatus transactionStatus() {
+        return (TransactionStatus) DTXLocalContext.cur().getAttachment();
+    }
+
+    public void associateTransaction(TransactionStatus transactionStatus) throws SystemException, NotSupportedException {
+        DTXLocalContext.getOrNew().setAttachment(transactionStatus);
         if (!TracingContext.tracing().hasGroup()) {
             globalContext.startTx();
             this.begin();
@@ -94,5 +93,9 @@ public class DistributedTransactionManager implements TransactionManager {
         if (!globalContext.hasTxContext()) {
             globalContext.startTx();
         }
+    }
+
+    public boolean isOriginalBranch() {
+        return globalContext.txContext().isDtxStart();
     }
 }
