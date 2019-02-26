@@ -2,11 +2,15 @@ package com.codingapi.txlcn.tracing;
 
 import com.codingapi.txlcn.common.util.Maps;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * Description: DTX Tracing 工具
@@ -15,7 +19,14 @@ import java.util.Optional;
  * @author ujued
  */
 @Slf4j
-public class Tracings {
+@Component
+public class Tracings implements ApplicationContextAware {
+
+    private static List<TracingTrigger> tracingTriggers = new LinkedList<>();
+
+    public static void registerTracingTriggers(Collection<TracingTrigger> tracingTriggers) {
+        Tracings.tracingTriggers.addAll(tracingTriggers);
+    }
 
     /**
      * 私有构造器
@@ -34,6 +45,7 @@ public class Tracings {
             tracingSetter.set(TracingConstants.HEADER_KEY_GROUP_ID, TracingContext.tracing().groupId());
             tracingSetter.set(TracingConstants.HEADER_KEY_APP_MAP,
                     Base64Utils.encodeToString(TracingContext.tracing().appMapString().getBytes(StandardCharsets.UTF_8)));
+            tracingTriggers.forEach(TracingTrigger::onTracingTransmit);
         }
     }
 
@@ -49,6 +61,21 @@ public class Tracings {
                 StringUtils.isEmpty(appList) ? appList : new String(Base64Utils.decodeFromString(appList), StandardCharsets.UTF_8)));
         if (TracingContext.tracing().hasGroup()) {
             log.debug("tracing apply group:{}, app map:{}", groupId, appList);
+            tracingTriggers.forEach(TracingTrigger::onTracingApply);
+        }
+    }
+
+    public static void applyBack() {
+        if (TracingContext.tracing().hasGroup()) {
+            tracingTriggers.forEach(TracingTrigger::onTracingApplyBack);
+        }
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        Map<String, TracingTrigger> txPropagationTriggerMap = applicationContext.getBeansOfType(TracingTrigger.class);
+        if (!txPropagationTriggerMap.isEmpty()) {
+            registerTracingTriggers(txPropagationTriggerMap.values());
         }
     }
 

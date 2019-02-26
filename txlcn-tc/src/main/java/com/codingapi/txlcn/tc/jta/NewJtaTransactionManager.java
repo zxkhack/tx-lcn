@@ -23,6 +23,12 @@ public class NewJtaTransactionManager extends JtaTransactionManager {
     }
 
     @Override
+    protected boolean isExistingTransaction(Object transaction) {
+
+        return super.isExistingTransaction(transaction);
+    }
+
+    @Override
     protected void doJtaBegin(JtaTransactionObject txObject, TransactionDefinition definition) throws NotSupportedException, SystemException {
         DTXLocalContext.getOrNew().setAttachment(definition);
         super.doJtaBegin(txObject, definition);

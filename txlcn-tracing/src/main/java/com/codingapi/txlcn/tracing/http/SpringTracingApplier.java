@@ -20,6 +20,7 @@ import com.codingapi.txlcn.tracing.http.spring.WebMvcConfigurer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 
 import javax.servlet.http.HttpServletRequest;
@@ -39,6 +40,11 @@ public class SpringTracingApplier implements com.codingapi.txlcn.tracing.http.sp
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         Tracings.apply(request::getHeader);
         return true;
+    }
+
+    @Override
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
+        Tracings.applyBack();
     }
 
     @Override
