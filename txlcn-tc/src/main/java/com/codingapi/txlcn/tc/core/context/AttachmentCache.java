@@ -15,6 +15,8 @@
  */
 package com.codingapi.txlcn.tc.core.context;
 
+import java.util.Map;
+
 /**
  * Description: 维护{@code mainKey} 和 {@code key}相关的附加对象
  * Date: 19-1-23 下午12:03
@@ -30,7 +32,7 @@ public interface AttachmentCache {
      * @param key        key
      * @param attachment attachment
      */
-    void attach(String mainKey, String key, Object attachment);
+    void attach(String mainKey, Object key, Object attachment);
 
     /**
      * {@code key} 附加一个对象
@@ -38,7 +40,7 @@ public interface AttachmentCache {
      * @param key        key
      * @param attachment attachment
      */
-    void attach(String key, Object attachment);
+    void attach(Object key, Object attachment);
 
     /**
      * 获取{@code mainKey} {@code key}类型的附加对象
@@ -48,7 +50,7 @@ public interface AttachmentCache {
      * @param <T>     type
      * @return attachment
      */
-    <T> T attachment(String mainKey, String key);
+    <T> T attachment(String mainKey, Object key);
 
     /**
      * 获取{@code key}的附加对象
@@ -57,7 +59,7 @@ public interface AttachmentCache {
      * @param <T> type
      * @return attachment
      */
-    <T> T attachment(String key);
+    <T> T attachment(Object key);
 
     /**
      * 移除{@code mainKey} {@code key}类型的附加对象
@@ -65,7 +67,7 @@ public interface AttachmentCache {
      * @param mainKey mainKey
      * @param key     key
      */
-    void remove(String mainKey, String key);
+    void remove(String mainKey, Object key);
 
     /**
      * 移除{@code mainKey}所有类型的附加对象
@@ -79,7 +81,7 @@ public interface AttachmentCache {
      *
      * @param key key
      */
-    void remove(String key);
+    void remove(Object key);
 
     /**
      * {@code mainKey}是否存在{@code key}类型的附加对象
@@ -88,7 +90,7 @@ public interface AttachmentCache {
      * @param key     key
      * @return 是否存在
      */
-    boolean containsKey(String mainKey, String key);
+    boolean containsKey(String mainKey, Object key);
 
     /**
      * {@code key}是否存在附加对象
@@ -96,5 +98,7 @@ public interface AttachmentCache {
      * @param key key
      * @return 是否存在
      */
-    boolean containsKey(String key);
+    boolean containsKey(Object key);
+
+    Map<Object, Object> attachments(String mainKey);
 }

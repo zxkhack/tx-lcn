@@ -28,11 +28,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -62,16 +60,21 @@ public class DefaultGlobalContext implements TCGlobalContext {
     }
 
     @Override
-    public void setLcnConnection(String groupId, LcnConnectionProxy connectionProxy) {
-        attachmentCache.attach(groupId, LcnConnectionProxy.class.getName(), connectionProxy);
+    public void setLcnConnection(String groupId, DataSource dataSource, LcnConnectionProxy connectionProxy) {
+        attachmentCache.attach(groupId, dataSource, connectionProxy);
     }
 
     @Override
-    public LcnConnectionProxy getLcnConnection(String groupId) throws TCGlobalContextException {
-        if (attachmentCache.containsKey(groupId, LcnConnectionProxy.class.getName())) {
-            return attachmentCache.attachment(groupId, LcnConnectionProxy.class.getName());
+    public LcnConnectionProxy getLcnConnection(String groupId, DataSource dataSource) throws TCGlobalContextException {
+        if (attachmentCache.containsKey(groupId, dataSource)) {
+            return attachmentCache.attachment(groupId, dataSource);
         }
         throw new TCGlobalContextException("non exists lcn connection");
+    }
+
+    @Override
+    public Collection<Object> findLcnConnections(String groupId) {
+        return attachmentCache.attachments(groupId).values();
     }
 
     @Override

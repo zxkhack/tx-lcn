@@ -15,8 +15,7 @@
  */
 package com.codingapi.txlcn.tc.support.resouce;
 
-import com.codingapi.txlcn.tc.aspect.weave.ConnectionCallback;
-
+import javax.sql.DataSource;
 import java.sql.Connection;
 
 /**
@@ -27,10 +26,10 @@ public interface TransactionResourceProxy {
     /**
      * 获取资源连接
      *
-     * @param connectionCallback Connection提供者
+     * @param dataSource Connection提供者
      * @return  Connection Connection
      * @throws Throwable Throwable
      */
-    Connection proxyConnection(ConnectionCallback connectionCallback) throws Throwable;
+    Connection proxyConnection(DataSource dataSource) throws Throwable;
 
 }

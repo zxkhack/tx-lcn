@@ -15,11 +15,11 @@
  */
 package com.codingapi.txlcn.tc.core.transaction.txc.resource;
 
-import com.codingapi.txlcn.tc.aspect.weave.ConnectionCallback;
 import com.codingapi.txlcn.tc.support.resouce.TransactionResourceProxy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 
 /**
@@ -40,7 +40,7 @@ public class TxcTransactionResourceProxy implements TransactionResourceProxy {
 
 
     @Override
-    public Connection proxyConnection(ConnectionCallback connectionCallback) throws Throwable {
-        return connectionHelper.proxy(connectionCallback.call());
+    public Connection proxyConnection(DataSource dataSource) throws Throwable {
+        return connectionHelper.proxy(dataSource.getConnection());
     }
 }

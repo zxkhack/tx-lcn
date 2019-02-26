@@ -21,6 +21,7 @@ import com.codingapi.txlcn.tc.support.resouce.TransactionResourceProxy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.Objects;
 
@@ -41,15 +42,15 @@ public class DTXResourceWeaver {
         this.txLcnBeanHelper = txLcnBeanHelper;
     }
 
-    public Object getConnection(ConnectionCallback connectionCallback) throws Throwable {
+    public Object getConnection(DataSource dataSource) throws Throwable {
         DTXLocalContext dtxLocalContext = DTXLocalContext.cur();
         if (Objects.nonNull(dtxLocalContext) && dtxLocalContext.isProxy()) {
             String transactionType = dtxLocalContext.getTransactionType();
             TransactionResourceProxy resourceProxy = txLcnBeanHelper.loadTransactionResourceProxy(transactionType);
-            Connection connection = resourceProxy.proxyConnection(connectionCallback);
+            Connection connection = resourceProxy.proxyConnection(dataSource);
             log.debug("proxy a sql connection: {}.", connection);
             return connection;
         }
-        return connectionCallback.call();
+        return dataSource.getConnection();
     }
 }

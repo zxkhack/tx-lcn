@@ -15,14 +15,15 @@
  */
 package com.codingapi.txlcn.tc.core.transaction.lcn.control;
 
-import com.codingapi.txlcn.common.exception.TCGlobalContextException;
 import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.tc.core.TransactionCleanService;
-import com.codingapi.txlcn.tc.core.transaction.lcn.resource.LcnConnectionProxy;
 import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.transaction.lcn.resource.LcnConnectionProxy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
 
 /**
  * Description:
@@ -43,12 +44,10 @@ public class LcnTransactionCleanService implements TransactionCleanService {
 
     @Override
     public void clear(String groupId, int state, String unitId, String unitType) throws TransactionClearException {
-        try {
-            LcnConnectionProxy connectionProxy = globalContext.getLcnConnection(groupId);
-            connectionProxy.notify(state);
-            // todo notify exception
-        } catch (TCGlobalContextException e) {
-            log.warn("Non lcn connection when clear transaction.");
+        Collection<Object> connections = globalContext.findLcnConnections(groupId);
+        for (Object conn : connections) {
+            ((LcnConnectionProxy) conn).notify(state);
         }
+        // todo notify exception
     }
 }

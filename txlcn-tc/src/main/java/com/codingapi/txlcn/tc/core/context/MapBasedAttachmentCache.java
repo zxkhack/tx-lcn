@@ -32,35 +32,35 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class MapBasedAttachmentCache implements AttachmentCache {
 
-    private Map<String, Map<String, Object>> cache = new ConcurrentHashMap<>(64);
+    private Map<String, Map<Object, Object>> cache = new ConcurrentHashMap<>(64);
 
-    private Map<String, Object> singlePropCache = new ConcurrentHashMap<>(64);
+    private Map<Object, Object> singlePropCache = new ConcurrentHashMap<>(64);
 
     @Override
-    public void attach(String mainKey, String key, Object attachment) {
+    public void attach(String mainKey, Object key, Object attachment) {
         Objects.requireNonNull(mainKey);
         Objects.requireNonNull(key);
         Objects.requireNonNull(attachment);
 
         if (cache.containsKey(mainKey)) {
-            Map<String, Object> map = cache.get(mainKey);
+            Map<Object, Object> map = cache.get(mainKey);
             map.put(key, attachment);
             return;
         }
 
-        Map<String, Object> map = new HashMap<>();
+        Map<Object, Object> map = new HashMap<>();
         map.put(key, attachment);
         cache.put(mainKey, map);
     }
 
     @Override
-    public void attach(String key, Object attachment) {
+    public void attach(Object key, Object attachment) {
         this.singlePropCache.put(key, attachment);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T attachment(String mainKey, String key) {
+    public <T> T attachment(String mainKey, Object key) {
         Objects.requireNonNull(key);
         Objects.requireNonNull(mainKey);
 
@@ -74,12 +74,12 @@ public class MapBasedAttachmentCache implements AttachmentCache {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T attachment(String key) {
+    public <T> T attachment(Object key) {
         return (T) this.singlePropCache.get(key);
     }
 
     @Override
-    public void remove(String mainKey, String key) {
+    public void remove(String mainKey, Object key) {
         if (cache.containsKey(mainKey)) {
             cache.get(mainKey).remove(key);
         }
@@ -91,17 +91,26 @@ public class MapBasedAttachmentCache implements AttachmentCache {
     }
 
     @Override
-    public boolean containsKey(String mainKey, String key) {
+    public boolean containsKey(String mainKey, Object key) {
         return cache.containsKey(mainKey) && cache.get(mainKey).containsKey(key);
     }
 
     @Override
-    public boolean containsKey(String key) {
+    public boolean containsKey(Object key) {
         return singlePropCache.containsKey(key);
     }
 
     @Override
-    public void remove(String key) {
+    public Map<Object, Object> attachments(String mainKey) {
+        Objects.requireNonNull(mainKey);
+        if (cache.containsKey(mainKey)) {
+            cache.get(mainKey);
+        }
+        return new HashMap<>(0);
+    }
+
+    @Override
+    public void remove(Object key) {
         this.singlePropCache.remove(key);
     }
 }

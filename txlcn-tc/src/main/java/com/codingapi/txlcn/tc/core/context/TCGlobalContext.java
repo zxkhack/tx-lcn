@@ -22,7 +22,9 @@ import com.codingapi.txlcn.tc.core.TccTransactionInfo;
 import com.codingapi.txlcn.tc.core.transaction.lcn.resource.LcnConnectionProxy;
 import com.codingapi.txlcn.tc.core.transaction.txc.analy.def.bean.TableStruct;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -39,7 +41,7 @@ public interface TCGlobalContext {
      * @param groupId         groupId
      * @param connectionProxy connectionProxy
      */
-    void setLcnConnection(String groupId, LcnConnectionProxy connectionProxy);
+    void setLcnConnection(String groupId, DataSource dataSource, LcnConnectionProxy connectionProxy);
 
     /**
      * get lcn proxy
@@ -48,7 +50,9 @@ public interface TCGlobalContext {
      * @return connection proxy
      * @throws TCGlobalContextException TCGlobalContextException
      */
-    LcnConnectionProxy getLcnConnection(String groupId) throws TCGlobalContextException;
+    LcnConnectionProxy getLcnConnection(String groupId, DataSource dataSource) throws TCGlobalContextException;
+
+    Collection<Object> findLcnConnections(String groupId);
 
     /**
      * get tcc info
