@@ -15,7 +15,6 @@
  */
 package com.codingapi.txlcn.tc.core.transaction.lcn.resource;
 
-import com.codingapi.txlcn.txmsg.dto.RpcResponseState;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
@@ -35,28 +34,22 @@ public class LcnConnectionProxy implements Connection {
         this.connection = connection;
     }
 
-    /**
-     * notify connection
-     *
-     * @param state transactionState
-     * @return RpcResponseState RpcResponseState
-     */
-    public RpcResponseState notify(int state) {
-        try {
-            if (state == 1) {
-                log.debug("commit transaction type[lcn] proxy connection:{}.", this);
-                connection.commit();
-            } else {
-                log.debug("rollback transaction type[lcn] proxy connection:{}.", this);
-                connection.rollback();
-            }
-            connection.close();
-            log.debug("transaction type[lcn] proxy connection:{} closed.", this);
-            return RpcResponseState.success;
-        } catch (Exception e) {
-            log.error(e.getLocalizedMessage(), e);
-            return RpcResponseState.fail;
-        }
+
+    public void realCommit() throws SQLException {
+        log.debug("commit transaction type[lcn] proxy connection:{}.", this);
+        connection.commit();
+        realClose();
+    }
+
+    public void realRollback() throws SQLException {
+        log.debug("rollback transaction type[lcn] proxy connection:{}.", this);
+        connection.rollback();
+        realClose();
+    }
+
+    private void realClose() throws SQLException {
+        connection.close();
+        log.debug("transaction type[lcn] proxy connection:{} closed.", this);
     }
 
     @Override

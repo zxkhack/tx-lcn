@@ -38,9 +38,9 @@ public class MapBasedAttachmentCache implements AttachmentCache {
 
     @Override
     public void attach(String mainKey, Object key, Object attachment) {
-        Objects.requireNonNull(mainKey);
-        Objects.requireNonNull(key);
-        Objects.requireNonNull(attachment);
+        Objects.requireNonNull(mainKey, "mainKey requiredNonNull");
+        Objects.requireNonNull(key, "key requiredNonNull");
+        Objects.requireNonNull(attachment, "attachment requiredNonNull");
 
         if (cache.containsKey(mainKey)) {
             Map<Object, Object> map = cache.get(mainKey);
@@ -55,14 +55,16 @@ public class MapBasedAttachmentCache implements AttachmentCache {
 
     @Override
     public void attach(Object key, Object attachment) {
+        Objects.requireNonNull(key, "key requiredNonNull");
+        Objects.requireNonNull(attachment, "attachment requiredNonNull");
         this.singlePropCache.put(key, attachment);
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> T attachment(String mainKey, Object key) {
-        Objects.requireNonNull(key);
-        Objects.requireNonNull(mainKey);
+        Objects.requireNonNull(key, "key requiredNonNull");
+        Objects.requireNonNull(mainKey, "mainKey requiredNonNull");
 
         if (cache.containsKey(mainKey)) {
             if (cache.get(mainKey).containsKey(key)) {
@@ -75,11 +77,14 @@ public class MapBasedAttachmentCache implements AttachmentCache {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T attachment(Object key) {
+        Objects.requireNonNull(key, "key requiredNonNull");
         return (T) this.singlePropCache.get(key);
     }
 
     @Override
     public void remove(String mainKey, Object key) {
+        Objects.requireNonNull(mainKey, "mainKey requiredNonNull");
+        Objects.requireNonNull(key, "key requiredNonNull");
         if (cache.containsKey(mainKey)) {
             cache.get(mainKey).remove(key);
         }
@@ -87,30 +92,35 @@ public class MapBasedAttachmentCache implements AttachmentCache {
 
     @Override
     public void removeAll(String mainKey) {
+        Objects.requireNonNull(mainKey, "mainKey requiredNonNull");
         this.cache.remove(mainKey);
     }
 
     @Override
     public boolean containsKey(String mainKey, Object key) {
+        Objects.requireNonNull(mainKey, "mainKey requiredNonNull");
+        Objects.requireNonNull(key, "key requiredNonNull");
         return cache.containsKey(mainKey) && cache.get(mainKey).containsKey(key);
     }
 
     @Override
     public boolean containsKey(Object key) {
+        Objects.requireNonNull(key, "key requiredNonNull");
         return singlePropCache.containsKey(key);
     }
 
     @Override
     public Map<Object, Object> attachments(String mainKey) {
-        Objects.requireNonNull(mainKey);
+        Objects.requireNonNull(mainKey, "mainKey requiredNonNull");
         if (cache.containsKey(mainKey)) {
-            cache.get(mainKey);
+            return cache.get(mainKey);
         }
         return new HashMap<>(0);
     }
 
     @Override
     public void remove(Object key) {
+        Objects.requireNonNull(key, "key requiredNonNull");
         this.singlePropCache.remove(key);
     }
 }

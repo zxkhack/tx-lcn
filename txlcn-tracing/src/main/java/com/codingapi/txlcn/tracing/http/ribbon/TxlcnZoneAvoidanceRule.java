@@ -21,6 +21,7 @@ import com.netflix.loadbalancer.Server;
 import com.netflix.loadbalancer.ZoneAvoidanceRule;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.serviceregistry.Registration;
+import org.springframework.util.Assert;
 
 import java.util.List;
 import java.util.Objects;
@@ -56,12 +57,12 @@ public class TxlcnZoneAvoidanceRule extends ZoneAvoidanceRule {
         }
 
         // 1. 自己加入此事务组调用链
-        assert Objects.nonNull(registration);
+        Assert.notNull(registration, "registration cant's be null.");
         TracingContext.tracing().addApp(registration.getServiceId(), registration.getHost() + ":" + registration.getPort());
 
         // 2. 获取所有要访问服务的实例
         List<Server> servers = getLoadBalancer().getAllServers();
-        assert !servers.isEmpty();
+        Assert.notEmpty(servers, "micro service not prepared.");
 
         JSONObject appMap = TracingContext.tracing().appMap();
         log.debug("load balanced rule servers: {}, txGroup[{}]'s server map:{}",

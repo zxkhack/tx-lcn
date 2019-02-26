@@ -41,7 +41,7 @@ public interface TCGlobalContext {
      * @param groupId         groupId
      * @param connectionProxy connectionProxy
      */
-    void setLcnConnection(String groupId, DataSource dataSource, LcnConnectionProxy connectionProxy);
+    void cacheLcnConnection(String groupId, DataSource dataSource, LcnConnectionProxy connectionProxy);
 
     /**
      * get lcn proxy
@@ -52,7 +52,7 @@ public interface TCGlobalContext {
      */
     LcnConnectionProxy getLcnConnection(String groupId, DataSource dataSource) throws TCGlobalContextException;
 
-    Collection<Object> findLcnConnections(String groupId);
+    Collection<Object> findLcnConnections(String groupId) throws TCGlobalContextException;
 
     /**
      * get tcc info

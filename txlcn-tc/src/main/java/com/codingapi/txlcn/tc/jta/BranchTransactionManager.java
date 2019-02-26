@@ -4,13 +4,13 @@ import com.codingapi.txlcn.common.exception.TransactionException;
 import com.codingapi.txlcn.common.util.Transactions;
 import com.codingapi.txlcn.tc.core.DTXLocalContext;
 import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
-import com.codingapi.txlcn.tc.core.template.TransactionCleanTemplate;
 import com.codingapi.txlcn.tc.core.template.TransactionControlTemplate;
 import com.codingapi.txlcn.tc.support.DTXUserControls;
 import com.codingapi.txlcn.tracing.TracingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.TransactionDefinition;
 
 import javax.naming.NamingException;
 import javax.naming.Reference;
@@ -33,22 +33,21 @@ public class BranchTransactionManager implements TransactionManager, UserTransac
 
     private final TransactionControlTemplate transactionControlTemplate;
 
-    private final TransactionCleanTemplate transactionCleanTemplate;
-
     @Autowired
-    public BranchTransactionManager(TCGlobalContext globalContext, TransactionControlTemplate transactionControlTemplate, TransactionCleanTemplate transactionCleanTemplate) {
+    public BranchTransactionManager(TCGlobalContext globalContext, TransactionControlTemplate transactionControlTemplate) {
         this.globalContext = globalContext;
         this.transactionControlTemplate = transactionControlTemplate;
-        this.transactionCleanTemplate = transactionCleanTemplate;
     }
 
-    public void begin() throws NotSupportedException, SystemException {
+    public void begin() throws SystemException {
+        TransactionDefinition txDef = (TransactionDefinition) DTXLocalContext.getOrNew().getAttachment();
+        DTXLocalContext.getOrNew().setUnitId(txDef.getName());
+        DTXLocalContext.getOrNew().setTransactionType(Transactions.LCN);
+        DTXLocalContext.makeProxy();
         log.info("branch transaction begin.");
         if (isOriginalBranch()) {
             globalContext.startTx();
             DTXLocalContext.getOrNew().setGroupId(TracingContext.tracing().groupId());
-            DTXLocalContext.getOrNew().setUnitId("1213");
-            DTXLocalContext.getOrNew().setTransactionType(Transactions.LCN);
             try {
                 transactionControlTemplate.createGroup(DTXLocalContext.cur().getGroupId(),
                         DTXLocalContext.cur().getUnitId(), null, DTXLocalContext.cur().getTransactionType());
@@ -57,6 +56,7 @@ public class BranchTransactionManager implements TransactionManager, UserTransac
             }
         } else if (!globalContext.hasTxContext()) {
             globalContext.startTx();
+            DTXLocalContext.getOrNew().setGroupId(TracingContext.tracing().groupId());
         }
         DTXLocalContext.getOrNew().setSysTransactionState(Status.STATUS_ACTIVE);
     }
@@ -95,7 +95,13 @@ public class BranchTransactionManager implements TransactionManager, UserTransac
     }
 
     private boolean isOriginalBranch() {
-        return !TracingContext.tracing().hasGroup() || globalContext.txContext().isDtxStart();
+        if (!TracingContext.tracing().hasGroup()) {
+            return true;
+        }
+        if (!globalContext.hasTxContext()) {
+            return false;
+        }
+        return globalContext.txContext().isDtxStart();
     }
 
 
@@ -104,7 +110,7 @@ public class BranchTransactionManager implements TransactionManager, UserTransac
             DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ROLLING_BACK);
             if (isOriginalBranch()) {
                 transactionControlTemplate.notifyGroup(TracingContext.tracing().groupId(),
-                        DTXLocalContext.cur().getUnitId(), "", 0);
+                        DTXLocalContext.cur().getUnitId(), DTXLocalContext.cur().getTransactionType(), 0);
                 DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ROLLEDBACK);
                 return;
             }

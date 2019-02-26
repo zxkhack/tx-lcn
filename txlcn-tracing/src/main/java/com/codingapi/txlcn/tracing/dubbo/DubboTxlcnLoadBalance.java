@@ -22,6 +22,7 @@ import com.alibaba.dubbo.rpc.RpcContext;
 import com.alibaba.fastjson.JSONObject;
 import com.codingapi.txlcn.tracing.TracingContext;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.Assert;
 
 import java.util.List;
 
@@ -41,12 +42,12 @@ class DubboTxlcnLoadBalance {
     static <T> Invoker<T> chooseInvoker(List<Invoker<T>> invokers, URL url, Invocation invocation, TxLcnLoadBalance loadBalance) {
 
         //非分布式事务直接执行默认业务.
-        if(!TracingContext.tracing().hasGroup()){
+        if (!TracingContext.tracing().hasGroup()) {
             return loadBalance.select(invokers, url, invocation);
         }
         TracingContext.tracing()
                 .addApp(RpcContext.getContext().getLocalAddressString(), empty);
-        assert invokers.size() > 0;
+        Assert.notEmpty(invokers, "dubbo provider can't be empty.");
         JSONObject appMap = TracingContext.tracing().appMap();
         log.debug("invokers: {}", invokers);
         Invoker<T> chooseInvoker = null;

@@ -60,7 +60,7 @@ public class DefaultGlobalContext implements TCGlobalContext {
     }
 
     @Override
-    public void setLcnConnection(String groupId, DataSource dataSource, LcnConnectionProxy connectionProxy) {
+    public void cacheLcnConnection(String groupId, DataSource dataSource, LcnConnectionProxy connectionProxy) {
         attachmentCache.attach(groupId, dataSource, connectionProxy);
     }
 
@@ -73,8 +73,16 @@ public class DefaultGlobalContext implements TCGlobalContext {
     }
 
     @Override
-    public Collection<Object> findLcnConnections(String groupId) {
-        return attachmentCache.attachments(groupId).values();
+    public Collection<Object> findLcnConnections(String groupId) throws TCGlobalContextException {
+        Collection<Object> collections = attachmentCache.attachments(groupId).entrySet()
+                .stream()
+                .filter(entry -> entry.getKey() instanceof DataSource)
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toSet());
+        if (collections.isEmpty()) {
+            throw new TCGlobalContextException("non lcn connection.");
+        }
+        return collections;
     }
 
     @Override

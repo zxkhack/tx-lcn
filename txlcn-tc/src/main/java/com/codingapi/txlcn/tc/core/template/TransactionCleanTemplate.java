@@ -62,7 +62,7 @@ public class TransactionCleanTemplate {
      * @throws TransactionClearException TransactionClearException
      */
     public void clean(String groupId, String unitId, String unitType, int state) throws TransactionClearException {
-        txLogger.txTrace(groupId, unitId, "clean transaction");
+        txLogger.txTrace(groupId, unitId, "clean transaction[{}], state: {}", unitType, state);
         try {
             cleanWithoutAspectLog(groupId, unitId, unitType, state);
             aspectLogger.clearLog(groupId, unitId);

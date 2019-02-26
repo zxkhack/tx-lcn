@@ -15,6 +15,7 @@
  */
 package com.codingapi.txlcn.tc.core.transaction.lcn.control;
 
+import com.codingapi.txlcn.common.exception.TCGlobalContextException;
 import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.tc.core.TransactionCleanService;
 import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.sql.SQLException;
 import java.util.Collection;
 
 /**
@@ -44,9 +46,19 @@ public class LcnTransactionCleanService implements TransactionCleanService {
 
     @Override
     public void clear(String groupId, int state, String unitId, String unitType) throws TransactionClearException {
-        Collection<Object> connections = globalContext.findLcnConnections(groupId);
-        for (Object conn : connections) {
-            ((LcnConnectionProxy) conn).notify(state);
+        try {
+            Collection<Object> connections = globalContext.findLcnConnections(groupId);
+            for (Object conn : connections) {
+                if (state == 1) {
+                    log.debug("real commit connection: {}", conn);
+                    ((LcnConnectionProxy) conn).realCommit();
+                    continue;
+                }
+                log.debug("real rollback connection: {}", conn);
+                ((LcnConnectionProxy) conn).realRollback();
+            }
+        } catch (TCGlobalContextException | SQLException e) {
+            e.printStackTrace();
         }
         // todo notify exception
     }

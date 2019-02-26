@@ -47,7 +47,7 @@ public class LcnTransactionResourceProxy implements TransactionResourceProxy {
             return globalContext.getLcnConnection(groupId, dataSource);
         } catch (TCGlobalContextException e) {
             LcnConnectionProxy lcnConnectionProxy = new LcnConnectionProxy(dataSource.getConnection());
-            globalContext.setLcnConnection(groupId, dataSource, lcnConnectionProxy);
+            globalContext.cacheLcnConnection(groupId, dataSource, lcnConnectionProxy);
             lcnConnectionProxy.setAutoCommit(false);
             return lcnConnectionProxy;
         }
