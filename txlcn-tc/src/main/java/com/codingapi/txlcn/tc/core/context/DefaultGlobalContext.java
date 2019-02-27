@@ -229,8 +229,8 @@ public class DefaultGlobalContext implements TCGlobalContext {
     }
 
     @Override
-    public Map<Object, Object> getTransactionAttributes(String mappedMethodName) {
-        return NonSpringRuntimeContext.instance().getTransactionAttributes(mappedMethodName);
+    public TransactionAttributes getTransactionAttributes(String unitId) {
+        return NonSpringRuntimeContext.instance().getTransactionAttributes(unitId);
     }
 
     @Override

@@ -17,7 +17,6 @@ package com.codingapi.txlcn.tc.core;
 
 
 import com.codingapi.txlcn.tc.aspect.TransactionInfo;
-import com.codingapi.txlcn.tc.core.transaction.tcc.control.TccTransactionCleanService;
 import com.codingapi.txlcn.tc.jta.Invocation;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -100,14 +99,6 @@ public class DTXLocalContext {
      * 是否代理资源
      */
     private boolean proxy;
-
-    /**
-     * 是否是刚刚创建的DTXLocal. 不是特别了解这个意思时，不要轻易操作这个值。
-     *
-     * @see TccTransactionCleanService#clear(java.lang.String, int, java.lang.String, java.lang.String)
-     */
-    @Deprecated
-    private boolean justNow;
 
     //////// private     ///////////////////////
     /**

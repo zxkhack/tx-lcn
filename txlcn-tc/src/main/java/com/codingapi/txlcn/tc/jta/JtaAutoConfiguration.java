@@ -1,8 +1,17 @@
 package com.codingapi.txlcn.tc.jta;
 
+import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.boot.autoconfigure.transaction.TransactionManagerCustomizers;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Role;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.AbstractTransactionManagementConfiguration;
+import org.springframework.transaction.config.TransactionManagementConfigUtils;
+import org.springframework.transaction.interceptor.BeanFactoryTransactionAttributeSourceAdvisor;
+import org.springframework.transaction.interceptor.TransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
 import javax.transaction.TransactionManager;
@@ -16,7 +25,19 @@ import java.util.Objects;
  * @author ujued
  */
 @Configuration
-public class JtaAutoConfiguration {
+public class JtaAutoConfiguration extends AbstractTransactionManagementConfiguration {
+
+    @Bean(name = TransactionManagementConfigUtils.TRANSACTION_ADVISOR_BEAN_NAME)
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+    public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor(TransactionInterceptor transactionInterceptor) {
+        BeanFactoryTransactionAttributeSourceAdvisor advisor = new BeanFactoryTransactionAttributeSourceAdvisor();
+        advisor.setTransactionAttributeSource(transactionAttributeSource());
+        advisor.setAdvice(transactionInterceptor);
+        if (this.enableTx != null) {
+            advisor.setOrder(this.enableTx.<Integer>getNumber("order"));
+        }
+        return advisor;
+    }
 
     @Bean
     public JtaTransactionManager jtaTransactionManager(UserTransaction userTransaction, TransactionManager transactionManager,
@@ -26,5 +47,18 @@ public class JtaAutoConfiguration {
             transactionManagerCustomizers.customize(jtaTransactionManager);
         }
         return jtaTransactionManager;
+    }
+
+    @Bean
+    public TransactionInterceptor transactionInterceptor(PlatformTransactionManager transactionManager, TCGlobalContext globalContext) {
+        LcnTransactionInterceptor transactionInterceptor = new LcnTransactionInterceptor(globalContext);
+        transactionInterceptor.setTransactionManager(transactionManager);
+        transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource());
+        return transactionInterceptor;
+    }
+
+    @Bean
+    public TransactionAttributeSource transactionAttributeSource() {
+        return new LcnAnnotationTransactionAttributeSource();
     }
 }

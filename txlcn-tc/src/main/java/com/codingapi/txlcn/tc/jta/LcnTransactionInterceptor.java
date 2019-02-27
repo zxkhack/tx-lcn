@@ -49,11 +49,19 @@ public class LcnTransactionInterceptor extends TransactionInterceptor {
         // 最外层方法时
         if (Objects.isNull(DTXLocalContext.cur())) {
             logger.debug("outer method start.");
+            com.codingapi.txlcn.tc.aspect.TransactionInfo transactionInfo = new com.codingapi.txlcn.tc.aspect.TransactionInfo();
+            transactionInfo.setTargetClazz(invocation.getThis().getClass());
+            transactionInfo.setArgumentValues(invocation.getArguments());
+            transactionInfo.setTarget(invocation.getThis());
+            transactionInfo.setMethodStr(invocation.getMethod().toString());
+            transactionInfo.setMethod(invocation.getMethod().getName());
+
             Invocation outerInvocation = new Invocation(invocation.getMethod(), invocation.getThis(), invocation.getArguments());
             DTXLocalContext.getOrNew()
                     .getInvocations()
                     .add(outerInvocation);
             TransactionAttributes transactionAttributes = NonSpringRuntimeContext.instance().getTransactionAttributes(outerInvocation);
+            DTXLocalContext.cur().setTransactionInfo(transactionInfo);
             DTXLocalContext.cur().setTransactionType(transactionAttributes.getTransactionType());
             DTXLocalContext.cur().setUnitId(transactionAttributes.getUnitId());
             DTXLocalContext.makeProxy();
@@ -82,6 +90,7 @@ public class LcnTransactionInterceptor extends TransactionInterceptor {
 
         // 最外层方法时
         if (isOuter) {
+            logger.debug("outer method stop.");
             DTXLocalContext.makeNeverAppeared();
         }
     }

@@ -18,9 +18,10 @@ package com.codingapi.txlcn.tc.core.transaction.tcc.control;
 import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.common.util.Maps;
 import com.codingapi.txlcn.tc.core.DTXLocalContext;
-import com.codingapi.txlcn.tc.core.TccTransactionInfo;
 import com.codingapi.txlcn.tc.core.TransactionCleanService;
 import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.TransactionAttributes;
+import com.codingapi.txlcn.tc.support.TxLcnBeanHelper;
 import com.codingapi.txlcn.tc.txmsg.TMReporter;
 import com.codingapi.txlcn.tracing.TracingConstants;
 import com.codingapi.txlcn.tracing.TracingContext;
@@ -28,9 +29,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Method;
-import java.util.Objects;
 
 /**
  * Description:
@@ -48,12 +49,15 @@ public class TccTransactionCleanService implements TransactionCleanService {
 
     private final TCGlobalContext globalContext;
 
+    private final TxLcnBeanHelper beanHelper;
+
     @Autowired
     public TccTransactionCleanService(ApplicationContext applicationContext,
-                                      TMReporter tmReporter, TCGlobalContext globalContext) {
+                                      TMReporter tmReporter, TCGlobalContext globalContext, TxLcnBeanHelper beanHelper) {
         this.applicationContext = applicationContext;
         this.tmReporter = tmReporter;
         this.globalContext = globalContext;
+        this.beanHelper = beanHelper;
     }
 
     @Override
@@ -61,22 +65,22 @@ public class TccTransactionCleanService implements TransactionCleanService {
         Method exeMethod;
         boolean shouldDestroy = !TracingContext.tracing().hasGroup();
         try {
-            TccTransactionInfo tccInfo = globalContext.tccTransactionInfo(unitId, null);
-            Object object = applicationContext.getBean(tccInfo.getExecuteClass());
-            // 将要移除。
-            if (Objects.isNull(DTXLocalContext.cur())) {
-                DTXLocalContext.getOrNew().setJustNow(true);
-            }
+            TransactionAttributes transactionAttributes = globalContext.getTransactionAttributes(unitId);
             if (shouldDestroy) {
                 TracingContext.init(Maps.of(TracingConstants.GROUP_ID, groupId, TracingConstants.APP_MAP, "{}"));
             }
             DTXLocalContext.getOrNew().setGroupId(groupId);
             DTXLocalContext.cur().setUnitId(unitId);
-            exeMethod = tccInfo.getExecuteClass().getMethod(
-                    state == 1 ? tccInfo.getConfirmMethod() : tccInfo.getCancelMethod(),
-                    tccInfo.getMethodTypeParameter());
+
+            Object bean = state == 1 ? beanHelper.loadBeanByName(transactionAttributes.getCommitBeanName()) :
+                    beanHelper.loadBeanByName(transactionAttributes.getRollbackBeanName());
+            Assert.notNull(bean, "second phase action bean must not null.");
+
+            exeMethod = bean.getClass().getMethod(
+                    state == 1 ? transactionAttributes.getCommitMethod() : transactionAttributes.getRollbackMethod());
+            Assert.notNull(exeMethod, "second phase action method must not null.");
             try {
-                exeMethod.invoke(object, tccInfo.getMethodParameter());
+                exeMethod.invoke(bean);
                 log.debug("User confirm/cancel logic over.");
             } catch (Throwable e) {
                 log.error("Tcc clean error.", e);
@@ -85,9 +89,6 @@ public class TccTransactionCleanService implements TransactionCleanService {
         } catch (Throwable e) {
             throw new TransactionClearException(e.getMessage());
         } finally {
-            if (DTXLocalContext.cur().isJustNow()) {
-                DTXLocalContext.makeNeverAppeared();
-            }
             if (shouldDestroy) {
                 TracingContext.tracing().destroy();
             }

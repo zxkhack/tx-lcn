@@ -18,6 +18,7 @@ package com.codingapi.txlcn.tc.annotation;
 /**
  * create by lorne on 2018/1/25
  */
+@Deprecated
 public interface ITxTransaction {
 
     /**

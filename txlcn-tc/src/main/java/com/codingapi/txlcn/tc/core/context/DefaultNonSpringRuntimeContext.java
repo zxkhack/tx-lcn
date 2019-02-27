@@ -28,19 +28,20 @@ public class DefaultNonSpringRuntimeContext implements NonSpringRuntimeContext {
     }
 
     @Override
-    public Map<Object, Object> getTransactionAttributes(String mappedMethodName) {
-        return MAP.get(mappedMethodName);
+    public TransactionAttributes getTransactionAttributes(String unitId) {
+        return fromMap(MAP.get(unitId), unitId);
     }
 
     @Override
     public TransactionAttributes getTransactionAttributes(Invocation invocation) {
+        String unitId = Transactions.unitId(invocation.getMethod().toString());
         if (!ClassUtils.isUserLevelMethod(invocation.getMethod())) {
             return null;
         }
 
         // Look for direct name match.
         String methodName = invocation.getMethod().getName();
-        Map<Object, Object> attrs = getTransactionAttributes(methodName);
+        Map<Object, Object> attrs = MAP.get(methodName);
 
         if (attrs == null) {
             // Look for most specific name match.
@@ -48,19 +49,34 @@ public class DefaultNonSpringRuntimeContext implements NonSpringRuntimeContext {
             for (String mappedName : MAP.keySet()) {
                 if (isMatch(methodName, mappedName) &&
                         (bestNameMatch == null || bestNameMatch.length() <= mappedName.length())) {
-                    attrs = getTransactionAttributes(mappedName);
+                    attrs = MAP.get(mappedName);
                     bestNameMatch = mappedName;
+                    MAP.put(unitId, attrs);
+                    MAP.put(methodName, attrs);
                 }
             }
+        } else if (!MAP.containsKey(unitId)) {
+            MAP.put(unitId, attrs);
         }
-        // todo cache
+
         if (Objects.nonNull(attrs)) {
-            return new TransactionAttributes((String) attrs.get(TRANSACTION_TYPE), Transactions.unitId(invocation.getMethod().toString()));
+            return fromMap(attrs, unitId);
         }
         throw new IllegalStateException("");
     }
 
     private boolean isMatch(String methodName, String mappedName) {
         return PatternMatchUtils.simpleMatch(mappedName, methodName);
+    }
+
+    private TransactionAttributes fromMap(Map<Object, Object> attrs, String unitId) {
+        TransactionAttributes transactionAttributes = new TransactionAttributes();
+        transactionAttributes.setUnitId(unitId);
+        transactionAttributes.setTransactionType((String) attrs.get(TRANSACTION_TYPE));
+        transactionAttributes.setCommitBeanName((String) attrs.get(TRANSACTION_COMMIT_BEAN));
+        transactionAttributes.setCommitMethod((String) attrs.get(TRANSACTION_COMMIT_METHOD));
+        transactionAttributes.setRollbackBeanName((String) attrs.get(TRANSACTION_ROLLBACK_BEAN));
+        transactionAttributes.setRollbackBeanName((String) attrs.get(TRANSACTION_ROLLBACK_METHOD));
+        return transactionAttributes;
     }
 }

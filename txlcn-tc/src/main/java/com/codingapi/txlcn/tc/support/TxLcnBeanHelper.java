@@ -22,6 +22,7 @@ import com.codingapi.txlcn.tc.support.resouce.TransactionResourceProxy;
 import com.codingapi.txlcn.tc.txmsg.RpcExecuteService;
 import com.codingapi.txlcn.txmsg.LCNCmdType;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
@@ -116,5 +117,14 @@ public class TxLcnBeanHelper {
 
     public TransactionCleanService loadTransactionCleanService(String transactionType) {
         return spring.getBean(String.format(TRANSACTION_CLEAN_SERVICE_NAME_FORMAT, transactionType.toLowerCase()), TransactionCleanService.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T loadBeanByName(String beanName) {
+        try {
+            return (T) spring.getBean(beanName);
+        } catch (BeansException e) {
+            return null;
+        }
     }
 }

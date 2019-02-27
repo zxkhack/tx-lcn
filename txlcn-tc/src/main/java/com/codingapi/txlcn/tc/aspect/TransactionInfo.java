@@ -17,14 +17,17 @@ package com.codingapi.txlcn.tc.aspect;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
 /**
- *
- * @author  lorne on 2017/11/11
+ * @author lorne on 2017/11/11
  */
-public class TransactionInfo implements Serializable{
+@Data
+@NoArgsConstructor
+public class TransactionInfo implements Serializable {
 
     /**
      * 事务执行器
@@ -49,59 +52,12 @@ public class TransactionInfo implements Serializable{
      */
     private String methodStr;
 
-    public TransactionInfo() {
-    }
+    /**
+     * 目标对象
+     */
+    private transient Object target;
 
-    public TransactionInfo(Class targetClazz, String method, String methodStr, Object[] argumentValues, Class[] parameterTypes) {
-        this.targetClazz = targetClazz;
-        this.method = method;
-        this.methodStr = methodStr;
-        this.argumentValues = argumentValues;
-        this.parameterTypes = parameterTypes;
-    }
-
-    public String getMethodStr() {
-        return methodStr;
-    }
-
-    public void setMethodStr(String methodStr) {
-        this.methodStr = methodStr;
-    }
-
-    public Class getTargetClazz() {
-        return targetClazz;
-    }
-
-    public void setTargetClazz(Class targetClazz) {
-        this.targetClazz = targetClazz;
-    }
-
-    public String getMethod() {
-        return method;
-    }
-
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
-    public Object[] getArgumentValues() {
-        return argumentValues;
-    }
-
-    public void setArgumentValues(Object[] argumentValues) {
-        this.argumentValues = argumentValues;
-    }
-
-    public Class[] getParameterTypes() {
-        return parameterTypes;
-    }
-
-    public void setParameterTypes(Class[] parameterTypes) {
-        this.parameterTypes = parameterTypes;
-    }
-
-
-    public JSONObject toJsonObject(){
+    public JSONObject toJsonObject() {
         String json = JSON.toJSONString(this);
         return JSON.parseObject(json);
     }

@@ -25,6 +25,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
+@Deprecated
 public @interface TccTransaction {
 
     /**

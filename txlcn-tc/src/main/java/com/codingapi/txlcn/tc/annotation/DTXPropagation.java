@@ -21,6 +21,7 @@ package com.codingapi.txlcn.tc.annotation;
  *
  * @author ujued
  */
+@Deprecated
 public enum DTXPropagation {
     /**
      * 当前没有分布式事务，就创建。当前有分布式事务，就加入

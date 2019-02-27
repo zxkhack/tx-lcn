@@ -14,13 +14,21 @@ public interface NonSpringRuntimeContext {
 
     String TRANSACTION_TYPE = "tx.type";
 
+    String TRANSACTION_COMMIT_BEAN = "tx.bean.commit";
+
+    String TRANSACTION_ROLLBACK_BEAN = "tx.bean.rollback";
+
+    String TRANSACTION_COMMIT_METHOD = "tx.method.commit";
+
+    String TRANSACTION_ROLLBACK_METHOD = "tx.method.rollback";
+
     static NonSpringRuntimeContext instance() {
         return new DefaultNonSpringRuntimeContext();
     }
 
     void cacheTransactionAttributes(String mappedMethodName, Map<Object, Object> attributes);
 
-    Map<Object, Object> getTransactionAttributes(String mappedMethodName);
+    TransactionAttributes getTransactionAttributes(String unitId);
 
     TransactionAttributes getTransactionAttributes(Invocation invocation);
 }

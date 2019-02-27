@@ -1,7 +1,7 @@
 package com.codingapi.txlcn.tc.core.context;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * Description:
@@ -9,9 +9,13 @@ import lombok.Data;
  *
  * @author ujued
  */
-@AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class TransactionAttributes {
     private String transactionType;
+    private String commitMethod;
+    private String commitBeanName;
+    private String rollbackMethod;
+    private String rollbackBeanName;
     private String unitId;
 }
