@@ -36,15 +36,19 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class SpringTracingApplier implements com.codingapi.txlcn.tracing.http.spring.HandlerInterceptor, WebMvcConfigurer {
 
+    private ThreadLocal<Boolean> appliedLocal = new ThreadLocal<>();
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        Tracings.apply(request::getHeader);
+        boolean isApplied = Tracings.apply(request::getHeader);
+        appliedLocal.set(isApplied);
         return true;
     }
 
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) {
-        Tracings.applyBack();
+        Tracings.applyBack(appliedLocal.get());
+        appliedLocal.remove();
     }
 
     @Override

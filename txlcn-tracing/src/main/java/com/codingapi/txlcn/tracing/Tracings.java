@@ -54,7 +54,7 @@ public class Tracings implements ApplicationContextAware {
      *
      * @param tracingGetter Tracing信息获取器
      */
-    public static void apply(TracingGetter tracingGetter) {
+    public static boolean apply(TracingGetter tracingGetter) {
         String groupId = Optional.ofNullable(tracingGetter.get(TracingConstants.HEADER_KEY_GROUP_ID)).orElse("");
         String appList = Optional.ofNullable(tracingGetter.get(TracingConstants.HEADER_KEY_APP_MAP)).orElse("");
         TracingContext.init(Maps.newHashMap(TracingConstants.GROUP_ID, groupId, TracingConstants.APP_MAP,
@@ -62,11 +62,13 @@ public class Tracings implements ApplicationContextAware {
         if (TracingContext.tracing().hasGroup()) {
             log.debug("tracing apply group:{}, app map:{}", groupId, appList);
             tracingTriggers.forEach(TracingTrigger::onTracingApply);
+            return true;
         }
+        return false;
     }
 
-    public static void applyBack() {
-        if (TracingContext.tracing().hasGroup()) {
+    public static void applyBack(boolean isApplied) {
+        if (isApplied) {
             tracingTriggers.forEach(TracingTrigger::onTracingApplyBack);
         }
     }

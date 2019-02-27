@@ -33,7 +33,7 @@ import java.util.Set;
  *
  * @author ujued
  */
-public interface TCGlobalContext {
+public interface TCGlobalContext extends NonSpringRuntimeContext {
 
     /**
      * set lcn connection
@@ -52,6 +52,13 @@ public interface TCGlobalContext {
      */
     LcnConnectionProxy getLcnConnection(String groupId, DataSource dataSource) throws TCGlobalContextException;
 
+    /**
+     * all connections about lcn.
+     *
+     * @param groupId groupId
+     * @return collection of connections
+     * @throws TCGlobalContextException TCGlobalContextException
+     */
     Collection<Object> findLcnConnections(String groupId) throws TCGlobalContextException;
 
     /**
@@ -107,7 +114,7 @@ public interface TCGlobalContext {
      *
      * @return tx context info
      */
-    TxContext startTx();
+    TxContext startTx(boolean isOriginalBranch, String groupId);
 
     /**
      * get tx context info by groupId

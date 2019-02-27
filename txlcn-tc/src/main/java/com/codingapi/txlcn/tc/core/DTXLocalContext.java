@@ -16,10 +16,15 @@
 package com.codingapi.txlcn.tc.core;
 
 
+import com.codingapi.txlcn.tc.aspect.TransactionInfo;
 import com.codingapi.txlcn.tc.core.transaction.tcc.control.TccTransactionCleanService;
+import com.codingapi.txlcn.tc.jta.Invocation;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.transaction.Status;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -49,6 +54,15 @@ public class DTXLocalContext {
      */
     private String unitId;
 
+    private boolean originalBranch;
+
+    private TransactionInfo transactionInfo;
+
+    /**
+     * 业务线相关方法
+     */
+    private List<Invocation> invocations = new ArrayList<>(6);
+
     /**
      * 业务相关资源
      */
@@ -75,7 +89,7 @@ public class DTXLocalContext {
     /**
      * 系统分布式事务状态
      */
-    private int sysTransactionState = 1;
+    private int sysTransactionState = Status.STATUS_UNKNOWN;
 
     /**
      * 用户分布式事务状态
@@ -168,7 +182,7 @@ public class DTXLocalContext {
     public static void makeNeverAppeared() {
         if (currentLocal.get() != null) {
             log.debug("clean thread local[{}]: {}", DTXLocalContext.class.getSimpleName(), cur());
-            currentLocal.set(null);
+            currentLocal.remove();
         }
     }
 

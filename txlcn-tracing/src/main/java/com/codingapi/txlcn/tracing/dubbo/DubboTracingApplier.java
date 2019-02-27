@@ -31,9 +31,9 @@ public class DubboTracingApplier implements Filter {
 
     @Override
     public Result invoke(Invoker<?> invoker, Invocation invocation) throws RpcException {
-        Tracings.apply(invocation::getAttachment);
+        boolean isApplied = Tracings.apply(invocation::getAttachment);
         Result result = invoker.invoke(invocation);
-        Tracings.applyBack();
+        Tracings.applyBack(isApplied);
         return result;
     }
 }

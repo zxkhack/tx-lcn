@@ -2,9 +2,7 @@ package com.codingapi.txlcn.tc.jta;
 
 import com.codingapi.txlcn.common.exception.TransactionException;
 import com.codingapi.txlcn.tc.core.DTXLocalContext;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
 import com.codingapi.txlcn.tc.core.template.TransactionControlTemplate;
-import com.codingapi.txlcn.tracing.TracingContext;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.transaction.*;
@@ -21,17 +19,14 @@ public class DistributedTransaction implements Transaction {
 
     private final TransactionControlTemplate transactionControlTemplate;
 
-    private final TCGlobalContext globalContext;
-
-    public DistributedTransaction(TransactionControlTemplate transactionControlTemplate, TCGlobalContext globalContext) {
+    public DistributedTransaction(TransactionControlTemplate transactionControlTemplate) {
         this.transactionControlTemplate = transactionControlTemplate;
-        this.globalContext = globalContext;
     }
 
     @Override
     public void commit() throws SecurityException, IllegalStateException {
-        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_PREPARED);
         log.info("original branch transaction send tx message to TM");
+        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_PREPARED);
         String groupId = DTXLocalContext.cur().getGroupId();
         String unitId = DTXLocalContext.cur().getUnitId();
         String transactionType = DTXLocalContext.cur().getTransactionType();
@@ -51,14 +46,7 @@ public class DistributedTransaction implements Transaction {
 
     @Override
     public int getStatus() {
-        int ret = Status.STATUS_NO_TRANSACTION;
-        if (TracingContext.tracing().hasGroup()) {
-            ret = Status.STATUS_PREPARED;
-        } else {
-            globalContext.startTx();
-        }
-        log.info("branch getStatus: {}", ret);
-        return ret;
+        return Status.STATUS_PREPARED;
     }
 
     @Override
@@ -66,7 +54,7 @@ public class DistributedTransaction implements Transaction {
         DTXLocalContext.cur().setSysTransactionState(Status.STATUS_COMMITTING);
         try {
             transactionControlTemplate.joinGroup(DTXLocalContext.cur().getGroupId(), DTXLocalContext.cur().getUnitId(),
-                    DTXLocalContext.cur().getTransactionType(), null);
+                    DTXLocalContext.cur().getTransactionType(), DTXLocalContext.cur().getTransactionInfo());
         } catch (TransactionException e) {
             throw new RollbackException(e.getMessage());
         }
@@ -74,8 +62,11 @@ public class DistributedTransaction implements Transaction {
 
     @Override
     public void rollback() throws IllegalStateException {
-        transactionControlTemplate.notifyGroup(TracingContext.tracing().groupId(),
-                DTXLocalContext.cur().getUnitId(), DTXLocalContext.cur().getTransactionType(), 0);
+        String groupId = DTXLocalContext.cur().getGroupId();
+        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ROLLING_BACK);
+        String unitId = DTXLocalContext.cur().getUnitId();
+        String transactionType = DTXLocalContext.cur().getTransactionType();
+        transactionControlTemplate.notifyGroup(groupId, unitId, transactionType, 0);
         DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ROLLEDBACK);
     }
 

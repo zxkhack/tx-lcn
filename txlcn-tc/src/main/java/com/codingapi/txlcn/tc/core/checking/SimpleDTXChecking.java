@@ -98,7 +98,6 @@ public class SimpleDTXChecking implements DTXChecking, DisposableBean {
                     onAskTransactionStateException(groupId, unitId, transactionType);
                 } else {
                     transactionCleanTemplate.clean(groupId, unitId, transactionType, state);
-                    aspectLogger.clearLog(groupId, unitId);
                 }
 
             } catch (RpcException e) {

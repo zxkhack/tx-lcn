@@ -1,10 +1,7 @@
 package com.codingapi.txlcn.tc.jta;
 
-import com.codingapi.txlcn.common.util.Transactions;
 import com.codingapi.txlcn.tc.core.DTXLocalContext;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
 import com.codingapi.txlcn.tc.support.DTXUserControls;
-import com.codingapi.txlcn.tracing.TracingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,72 +22,41 @@ import java.io.Serializable;
 @Slf4j
 public class BranchTransaction implements UserTransaction, Referenceable, Serializable {
 
-    private final TCGlobalContext globalContext;
-
     private final DistributedTransactionManager transactionManager;
 
+    private boolean isOriginalBranch() {
+        return DTXLocalContext.cur().isOriginalBranch();
+    }
 
     @Autowired
-    public BranchTransaction(TCGlobalContext globalContext, DistributedTransactionManager transactionManager) {
-        this.globalContext = globalContext;
+    public BranchTransaction(DistributedTransactionManager transactionManager) {
         this.transactionManager = transactionManager;
     }
 
-    public void associateTransaction() {
-        DTXLocalContext.getOrNew().setGroupId(TracingContext.tracing().groupId());
-        DTXLocalContext.cur().setTransactionType(Transactions.LCN);
-        DTXLocalContext.cur().setUnitId(Transactions.getApplicationId());
-        DTXLocalContext.makeProxy();
-    }
-
-    private void associateTransactionDefinition() {
-        associateTransaction();
-    }
-
-    public void disassociateTransaction() {
-        DTXLocalContext.makeNeverAppeared();
-    }
-
-    public void begin() throws SystemException, NotSupportedException {
+    public void begin() throws SystemException {
         log.info("branch transaction begin.");
         if (isOriginalBranch()) {
-            associateTransactionDefinition();
             transactionManager.begin();
         }
-        DTXLocalContext.getOrNew().setSysTransactionState(Status.STATUS_ACTIVE);
+        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ACTIVE);
     }
 
     public void commit() throws SecurityException, IllegalStateException, HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException {
-        try {
-            // Original Branch
-            if (isOriginalBranch()) {
-                transactionManager.commit();
-                return;
-            }
-            // todo first phase commit
-            log.info("commit branch transaction.");
-        } finally {
-            disassociateTransaction();
+        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_COMMITTING);
+        log.info("commit branch transaction.");
+        // todo first phase commit
+        if (isOriginalBranch()) {
+            transactionManager.commit();
         }
-    }
-
-
-    private boolean isOriginalBranch() {
-        return !TracingContext.tracing().hasGroup() || globalContext.txContext().isDtxStart();
     }
 
 
     public void rollback() throws IllegalStateException, SecurityException, SystemException {
-        try {
-            DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ROLLING_BACK);
-            if (isOriginalBranch()) {
-                transactionManager.rollback();
-                return;
-            }
-            // todo local first phase rollback
-            log.info("rollback branch transaction.");
-        } finally {
-            disassociateTransaction();
+        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ROLLING_BACK);
+        // todo local first phase rollback
+        log.info("rollback branch transaction.");
+        if (isOriginalBranch()) {
+            transactionManager.rollback();
         }
     }
 
@@ -100,13 +66,11 @@ public class BranchTransaction implements UserTransaction, Referenceable, Serial
     }
 
     public int getStatus() throws SystemException {
-        int status = transactionManager.getStatus();
+        int status = DTXLocalContext.cur().getSysTransactionState();
         if (status == Status.STATUS_UNKNOWN) {
-            status = Status.STATUS_NO_TRANSACTION;
-            if (TracingContext.tracing().hasGroup()) {
-                status = Status.STATUS_PREPARED;
-            } else {
-                globalContext.startTx();
+            status = transactionManager.getStatus();
+            if (status == Status.STATUS_UNKNOWN) {
+                status = Status.STATUS_NO_TRANSACTION;
             }
         }
         log.info("branch getStatus: {}", status);

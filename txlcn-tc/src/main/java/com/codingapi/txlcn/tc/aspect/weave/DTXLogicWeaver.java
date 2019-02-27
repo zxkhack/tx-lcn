@@ -68,7 +68,12 @@ public class DTXLogicWeaver {
             log.debug("Unit[{}] used parent's TxContext[{}].", dtxInfo.getUnitId(), txContext.getGroupId());
         } else {
             // 没有的开启本地事务上下文
-            txContext = globalContext.startTx();
+            boolean isOriginalBranch = false;
+            if (!TracingContext.tracing().hasGroup()) {
+                isOriginalBranch = true;
+                TracingContext.tracing().beginTransactionGroup();
+            }
+            txContext = globalContext.startTx(isOriginalBranch, TracingContext.tracing().groupId());
         }
 
         // 本地事务调用
@@ -89,7 +94,7 @@ public class DTXLogicWeaver {
         info.setPropagation(dtxInfo.getTransactionPropagation());
         info.setTransactionInfo(dtxInfo.getTransactionInfo());
         info.setTransactionType(dtxInfo.getTransactionType());
-        info.setTransactionStart(txContext.isDtxStart());
+        info.setTransactionStart(txContext.isOriginalBranch());
 
         //LCN事务处理器
         try {

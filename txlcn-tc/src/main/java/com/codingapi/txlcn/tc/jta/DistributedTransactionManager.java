@@ -25,7 +25,7 @@ public class DistributedTransactionManager implements TransactionManager {
 
     private final TCGlobalContext globalContext;
 
-    private final ThreadLocal<Transaction> transactionThreadLocal = new NamedThreadLocal<>("Transaction Map");
+    private final ThreadLocal<Transaction> transactionLocal = new NamedThreadLocal<>("Transaction Map");
 
     @Autowired
     public DistributedTransactionManager(TransactionControlTemplate transactionControlTemplate, TCGlobalContext globalContext) {
@@ -34,11 +34,11 @@ public class DistributedTransactionManager implements TransactionManager {
     }
 
     public void associateTransaction() {
-        transactionThreadLocal.set(new DistributedTransaction(transactionControlTemplate, globalContext));
+        transactionLocal.set(new DistributedTransaction(transactionControlTemplate));
     }
 
     public void disassociateTransaction() {
-        transactionThreadLocal.remove();
+        transactionLocal.remove();
     }
 
     @Override
@@ -53,7 +53,8 @@ public class DistributedTransactionManager implements TransactionManager {
     }
 
     @Override
-    public void commit() throws SecurityException, IllegalStateException, HeuristicRollbackException, RollbackException, HeuristicMixedException, SystemException {
+    public void commit() throws SecurityException, IllegalStateException, HeuristicRollbackException,
+            RollbackException, HeuristicMixedException, SystemException {
         try {
             getTransaction().commit();
         } finally {
@@ -63,20 +64,20 @@ public class DistributedTransactionManager implements TransactionManager {
     }
 
     @Override
-    public int getStatus() throws SystemException {
+    public int getStatus() {
         if (getTransaction() == null) {
             return Status.STATUS_UNKNOWN;
         }
-        return getTransaction().getStatus();
+        return Status.STATUS_PREPARED;
     }
 
     @Override
     public Transaction getTransaction() {
-        return transactionThreadLocal.get();
+        return transactionLocal.get();
     }
 
     @Override
-    public void resume(Transaction tobj) throws InvalidTransactionException, IllegalStateException, SystemException {
+    public void resume(Transaction tobj) throws IllegalStateException {
         throw new UnsupportedOperationException("unsupported tm resume.");
     }
 
@@ -90,17 +91,17 @@ public class DistributedTransactionManager implements TransactionManager {
     }
 
     @Override
-    public void setRollbackOnly() throws IllegalStateException, SystemException {
+    public void setRollbackOnly() throws IllegalStateException {
         throw new UnsupportedOperationException("unsupported tm setRollbackOnly.");
     }
 
     @Override
-    public void setTransactionTimeout(int seconds) throws SystemException {
+    public void setTransactionTimeout(int seconds) {
         throw new UnsupportedOperationException("unsupported tm setTransactionTimeout.");
     }
 
     @Override
-    public Transaction suspend() throws SystemException {
+    public Transaction suspend() {
         throw new UnsupportedOperationException("unsupported tm suspend.");
     }
 }

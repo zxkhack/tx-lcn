@@ -21,7 +21,7 @@ public class JtaAutoConfiguration {
     @Bean
     public JtaTransactionManager jtaTransactionManager(UserTransaction userTransaction, TransactionManager transactionManager,
                                                        TransactionManagerCustomizers transactionManagerCustomizers) {
-        JtaTransactionManager jtaTransactionManager = new NewJtaTransactionManager(userTransaction, transactionManager);
+        JtaTransactionManager jtaTransactionManager = new JtaTransactionManager(userTransaction, transactionManager);
         if (Objects.nonNull(transactionManagerCustomizers)) {
             transactionManagerCustomizers.customize(jtaTransactionManager);
         }

@@ -46,7 +46,7 @@ public class TxContext {
     /**
      * 分布式事务发起方
      */
-    private boolean dtxStart;
+    private boolean originalBranch;
 
     /**
      * 事务创建时间

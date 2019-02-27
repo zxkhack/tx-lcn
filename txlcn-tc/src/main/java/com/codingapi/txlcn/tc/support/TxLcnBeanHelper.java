@@ -76,12 +76,12 @@ public class TxLcnBeanHelper {
 
 
     private String getControlBeanName(String transactionType, DTXPropagationState lcnTransactionState) {
-        return String.format(CONTROL_BEAN_NAME_FORMAT, transactionType, lcnTransactionState.getCode());
+        return String.format(CONTROL_BEAN_NAME_FORMAT, transactionType.toLowerCase(), lcnTransactionState.getCode());
     }
 
     private String getRpcBeanName(String transactionType, LCNCmdType cmdType) {
         if (transactionType != null) {
-            String name = String.format(RPC_BEAN_NAME_FORMAT, transactionType, cmdType.getCode());
+            String name = String.format(RPC_BEAN_NAME_FORMAT, transactionType.toLowerCase(), cmdType.getCode());
             log.debug("getRpcBeanName->{}", name);
             return name;
         } else {
@@ -93,7 +93,7 @@ public class TxLcnBeanHelper {
 
 
     public TransactionResourceProxy loadTransactionResourceProxy(String beanName) {
-        String name = String.format(TRANSACTION_BEAN_NAME_FORMAT, beanName);
+        String name = String.format(TRANSACTION_BEAN_NAME_FORMAT, beanName.toLowerCase());
         return spring.getBean(name, TransactionResourceProxy.class);
     }
 
@@ -115,6 +115,6 @@ public class TxLcnBeanHelper {
     }
 
     public TransactionCleanService loadTransactionCleanService(String transactionType) {
-        return spring.getBean(String.format(TRANSACTION_CLEAN_SERVICE_NAME_FORMAT, transactionType), TransactionCleanService.class);
+        return spring.getBean(String.format(TRANSACTION_CLEAN_SERVICE_NAME_FORMAT, transactionType.toLowerCase()), TransactionCleanService.class);
     }
 }

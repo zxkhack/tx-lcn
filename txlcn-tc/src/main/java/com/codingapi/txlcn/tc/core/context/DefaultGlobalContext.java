@@ -23,6 +23,7 @@ import com.codingapi.txlcn.tc.core.TccTransactionInfo;
 import com.codingapi.txlcn.tc.core.transaction.lcn.resource.LcnConnectionProxy;
 import com.codingapi.txlcn.tc.core.transaction.txc.analy.def.PrimaryKeysProvider;
 import com.codingapi.txlcn.tc.core.transaction.txc.analy.def.bean.TableStruct;
+import com.codingapi.txlcn.tc.jta.Invocation;
 import com.codingapi.txlcn.tracing.TracingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,13 +149,10 @@ public class DefaultGlobalContext implements TCGlobalContext {
     }
 
     @Override
-    public TxContext startTx() {
+    public TxContext startTx(boolean isOriginalBranch, String groupId) {
         TxContext txContext = new TxContext();
         // 事务发起方判断
-        txContext.setDtxStart(!TracingContext.tracing().hasGroup());
-        if (txContext.isDtxStart()) {
-            TracingContext.tracing().beginTransactionGroup();
-        }
+        txContext.setOriginalBranch(isOriginalBranch);
         txContext.setGroupId(TracingContext.tracing().groupId());
         String txContextKey = txContext.getGroupId() + ".dtx";
         attachmentCache.attach(txContextKey, txContext);
@@ -223,5 +221,20 @@ public class DefaultGlobalContext implements TCGlobalContext {
     public void clearGroup(String groupId) {
         // 事务组相关的数据
         this.attachmentCache.removeAll(groupId);
+    }
+
+    @Override
+    public void cacheTransactionAttributes(String mappedMethodName, Map<Object, Object> attributes) {
+        NonSpringRuntimeContext.instance().cacheTransactionAttributes(mappedMethodName, attributes);
+    }
+
+    @Override
+    public Map<Object, Object> getTransactionAttributes(String mappedMethodName) {
+        return NonSpringRuntimeContext.instance().getTransactionAttributes(mappedMethodName);
+    }
+
+    @Override
+    public TransactionAttributes getTransactionAttributes(Invocation invocation) {
+        return NonSpringRuntimeContext.instance().getTransactionAttributes(invocation);
     }
 }
