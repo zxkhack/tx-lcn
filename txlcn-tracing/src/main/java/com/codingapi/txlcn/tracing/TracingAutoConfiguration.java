@@ -15,8 +15,17 @@
  */
 package com.codingapi.txlcn.tracing;
 
+import com.codingapi.txlcn.tracing.http.TracingHystrixConcurrencyStrategy;
+import com.netflix.hystrix.strategy.HystrixPlugins;
+import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
+import com.netflix.hystrix.strategy.eventnotifier.HystrixEventNotifier;
+import com.netflix.hystrix.strategy.executionhook.HystrixCommandExecutionHook;
+import com.netflix.hystrix.strategy.metrics.HystrixMetricsPublisher;
+import com.netflix.hystrix.strategy.properties.HystrixPropertiesStrategy;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Description:
@@ -28,4 +37,36 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 public class TracingAutoConfiguration {
 
+
+    @PostConstruct
+    public void init() {
+        hystrixTracingInit();
+    }
+
+    /**
+     * Hystrix Tracing Init
+     */
+    private void hystrixTracingInit() {
+        // Keeps references of existing Hystrix plugins.
+        HystrixEventNotifier eventNotifier = HystrixPlugins.getInstance()
+                .getEventNotifier();
+        HystrixMetricsPublisher metricsPublisher = HystrixPlugins.getInstance()
+                .getMetricsPublisher();
+        HystrixPropertiesStrategy propertiesStrategy = HystrixPlugins.getInstance()
+                .getPropertiesStrategy();
+        HystrixCommandExecutionHook commandExecutionHook = HystrixPlugins.getInstance()
+                .getCommandExecutionHook();
+        HystrixConcurrencyStrategy concurrencyStrategy = HystrixPlugins.getInstance()
+                .getConcurrencyStrategy();
+
+        HystrixPlugins.reset();
+
+        // Registers existing plugins excepts the Concurrent Strategy plugin.
+        HystrixPlugins.getInstance().registerConcurrencyStrategy(
+                new TracingHystrixConcurrencyStrategy(concurrencyStrategy));
+        HystrixPlugins.getInstance().registerEventNotifier(eventNotifier);
+        HystrixPlugins.getInstance().registerMetricsPublisher(metricsPublisher);
+        HystrixPlugins.getInstance().registerPropertiesStrategy(propertiesStrategy);
+        HystrixPlugins.getInstance().registerCommandExecutionHook(commandExecutionHook);
+    }
 }

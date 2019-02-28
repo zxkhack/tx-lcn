@@ -62,7 +62,7 @@ public class TxlcnZoneAvoidanceRule extends ZoneAvoidanceRule {
 
         // 2. 获取所有要访问服务的实例
         List<Server> servers = getLoadBalancer().getAllServers();
-        Assert.notEmpty(servers, "micro service not prepared.");
+        Assert.notEmpty(servers, "micro service not prepared. latter try again.");
 
         JSONObject appMap = TracingContext.tracing().appMap();
         log.debug("load balanced rule servers: {}, txGroup[{}]'s server map:{}",
