@@ -1,4 +1,4 @@
-package com.codingapi.txlcn.tracing.http;
+package com.codingapi.txlcn.tracing.http.hystrix;
 
 import com.codingapi.txlcn.tracing.TracingContext;
 import com.netflix.hystrix.HystrixThreadPoolKey;
