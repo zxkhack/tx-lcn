@@ -55,7 +55,7 @@ public class QueryTMClusterExecuteService implements RpcExecuteService {
             log.info("Query TM cluster. {}", tmSet);
             return tmSet;
         } catch (FastStorageException e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         }
     }
 }

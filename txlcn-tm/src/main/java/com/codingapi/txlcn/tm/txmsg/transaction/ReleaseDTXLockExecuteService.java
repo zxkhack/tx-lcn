@@ -49,7 +49,7 @@ public class ReleaseDTXLockExecuteService implements RpcExecuteService {
             fastStorage.releaseLocks(dtxLockParams.getContextId(), dtxLockParams.getLocks());
             return true;
         } catch (FastStorageException e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         }
     }
 }

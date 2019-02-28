@@ -53,7 +53,7 @@ public class AcquireDTXLockExecuteService implements RpcExecuteService {
             fastStorage.acquireLocks(dtxLockParams.getContextId(), dtxLockParams.getLocks(), lockValue);
             return true;
         } catch (FastStorageException e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         }
     }
 }

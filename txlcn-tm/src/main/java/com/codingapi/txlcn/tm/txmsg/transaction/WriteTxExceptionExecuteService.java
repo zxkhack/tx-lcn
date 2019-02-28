@@ -71,7 +71,7 @@ public class WriteTxExceptionExecuteService implements RpcExecuteService {
             writeTxExceptionReq.setRemark(txExceptionParams.getRemark());
             compensationService.writeTxException(writeTxExceptionReq);
         } catch (Exception e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         }
         return null;
     }

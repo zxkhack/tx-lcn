@@ -70,7 +70,7 @@ public class InitClientService implements RpcExecuteService {
         try {
             rpcClient.bindAppName(transactionCmd.getRemoteKey(), initClientParams.getAppName(), initClientParams.getLabelName());
         } catch (RpcException e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         }
         // Machine len and id
         initClientParams.setSeqLen(txManagerConfig.getSeqLen());

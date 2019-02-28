@@ -74,7 +74,7 @@ public class ManagerServiceImpl implements ManagerService {
         try {
             id = fastStorage.acquireMachineId(machineMaxSize, timeout);
         } catch (FastStorageException e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         }
         log.info("Acquired machine id {}, max machine id is: {}", id, machineMaxSize);
         return id;

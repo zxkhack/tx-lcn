@@ -103,7 +103,7 @@ public class AdminServiceImpl implements AdminService {
         try {
             logList = txLoggerHelper.findByLimitAndFields(page, limit, timeOrder, list);
         } catch (TxLoggerException e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         }
 
         // 组装返回数据
@@ -127,7 +127,7 @@ public class AdminServiceImpl implements AdminService {
         try {
             txLoggerHelper.deleteByFields(list);
         } catch (TxLoggerException e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         }
     }
 

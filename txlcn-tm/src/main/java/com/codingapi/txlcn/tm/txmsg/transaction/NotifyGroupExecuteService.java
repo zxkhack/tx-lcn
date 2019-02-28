@@ -77,7 +77,7 @@ public class NotifyGroupExecuteService implements RpcExecuteService {
             }
             return commitState;
         } catch (TransactionException e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         } finally {
             transactionManager.close(transactionCmd.getGroupId());
             // 系统日志

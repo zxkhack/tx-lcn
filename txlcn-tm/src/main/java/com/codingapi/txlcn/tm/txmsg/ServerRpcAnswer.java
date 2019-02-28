@@ -15,6 +15,7 @@
  */
 package com.codingapi.txlcn.tm.txmsg;
 
+import com.codingapi.txlcn.common.exception.TxManagerException;
 import com.codingapi.txlcn.tm.config.TxManagerConfig;
 import com.codingapi.txlcn.tm.support.TxLcnManagerRpcBeanHelper;
 import com.codingapi.txlcn.txmsg.LCNCmdType;
@@ -70,7 +71,7 @@ public class ServerRpcAnswer implements RpcAnswer, DisposableBean {
                 try {
                     Serializable message = rpcExecuteService.execute(transactionCmd);
                     messageDto = MessageCreator.okResponse(message, action);
-                } catch (Throwable e) {
+                } catch (TxManagerException e) {
                     log.error("rpc execute service error. action: " + action, e);
                     messageDto = MessageCreator.failResponse(e, action);
                 } finally {

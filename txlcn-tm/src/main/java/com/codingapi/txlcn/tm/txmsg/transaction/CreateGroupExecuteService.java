@@ -49,7 +49,7 @@ public class CreateGroupExecuteService implements RpcExecuteService {
         try {
             transactionManager.begin(transactionCmd.getGroupId());
         } catch (TransactionException e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         }
         txLogger.txTrace(transactionCmd.getGroupId(), null, "created group");
         return null;

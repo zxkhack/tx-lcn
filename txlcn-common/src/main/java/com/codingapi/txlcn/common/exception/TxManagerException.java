@@ -28,8 +28,4 @@ public class TxManagerException extends Exception {
     public TxManagerException(String message) {
         super(message);
     }
-
-    public TxManagerException(Throwable cause) {
-        super(cause);
-    }
 }

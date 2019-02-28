@@ -101,7 +101,7 @@ public class AdminController {
         try {
             return txExceptionService.getTransactionInfo(groupId, unitId);
         } catch (TransactionStateException e) {
-            throw new TxManagerException(e);
+            throw new TxManagerException(e.getMessage());
         }
     }
 
