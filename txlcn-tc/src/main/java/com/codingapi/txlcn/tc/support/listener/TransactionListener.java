@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.support.listener;
 
-import com.codingapi.txlcn.tc.core.TxTransactionInfo;
+import com.codingapi.txlcn.tc.core.context.TxContext;
 
 /**
  * Description: 事务流程监听器
@@ -30,17 +30,17 @@ public interface TransactionListener {
      *
      * @param txTransactionInfo txTransactionInfo
      */
-    void onTransactionBegin(TxTransactionInfo txTransactionInfo);
+    void onTransactionBegin(TxContext txContext);
     
     /**
      * tx error
      *
-     * @param txTransactionInfo txTransactionInfo
+     * @param txContext txContext
      */
-    void onTransactionError(TxTransactionInfo txTransactionInfo);
+    void onTransactionError(TxContext txContext);
     
     /**
-     * tx clean
+     * tx secondPhase
      *
      * @param groupId          groupId
      * @param unitId           unitId

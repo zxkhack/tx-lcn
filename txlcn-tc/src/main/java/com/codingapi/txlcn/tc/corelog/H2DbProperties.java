@@ -36,6 +36,10 @@ public class H2DbProperties {
 
     private String filePath;
 
+    private static final String LCN_DIR = ".txlcn";
+
+    private static final String JOINT_MARK = "-";
+
     public H2DbProperties(
             @Autowired(required = false) ConfigurableEnvironment environment,
             @Autowired(required = false) ServerProperties serverProperties) {
@@ -43,15 +47,14 @@ public class H2DbProperties {
         Integer port = 0;
         if (Objects.nonNull(environment)) {
             applicationName = environment.getProperty("spring.application.name");
+            if (StringUtils.isEmpty(applicationName)) {
+                applicationName = "application";
+            }
         }
         if (Objects.nonNull(serverProperties)) {
             port = serverProperties.getPort();
         }
-        this.filePath = System.getProperty("user.dir") +
-                File.separator +
-                ".txlcn" +
-                File.separator +
-                (StringUtils.hasText(applicationName) ? applicationName : "application") +
-                "-" + port;
+        this.filePath = System.getProperty("user.dir") + File.separator + LCN_DIR + File.separator +
+                applicationName + JOINT_MARK + port;
     }
 }

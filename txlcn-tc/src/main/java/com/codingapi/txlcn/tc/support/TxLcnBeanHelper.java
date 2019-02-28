@@ -15,10 +15,8 @@
  */
 package com.codingapi.txlcn.tc.support;
 
-import com.codingapi.txlcn.tc.core.DTXLocalControl;
-import com.codingapi.txlcn.tc.core.DTXPropagationState;
 import com.codingapi.txlcn.tc.core.TransactionCleanService;
-import com.codingapi.txlcn.tc.support.resouce.TransactionResourceProxy;
+import com.codingapi.txlcn.tc.core.TransactionResourceProxy;
 import com.codingapi.txlcn.tc.txmsg.RpcExecuteService;
 import com.codingapi.txlcn.txmsg.LCNCmdType;
 import lombok.extern.slf4j.Slf4j;
@@ -37,14 +35,6 @@ import org.springframework.stereotype.Component;
 @Component
 @Slf4j
 public class TxLcnBeanHelper {
-
-    /**
-     * DTXLocalControl bean 名称格式
-     * control_%s_%s
-     * transaction:前缀 %s:事务类型（lcn,tcc,txc） %s:事务状态(starting,running)
-     */
-    private static final String CONTROL_BEAN_NAME_FORMAT = "control_%s_%s";
-
 
     /**
      * message bean 名称格式
@@ -75,44 +65,15 @@ public class TxLcnBeanHelper {
         this.spring = spring;
     }
 
-
-    private String getControlBeanName(String transactionType, DTXPropagationState lcnTransactionState) {
-        return String.format(CONTROL_BEAN_NAME_FORMAT, transactionType.toLowerCase(), lcnTransactionState.getCode());
-    }
-
-    private String getRpcBeanName(String transactionType, LCNCmdType cmdType) {
-        if (transactionType != null) {
-            String name = String.format(RPC_BEAN_NAME_FORMAT, transactionType.toLowerCase(), cmdType.getCode());
-            log.debug("getRpcBeanName->{}", name);
-            return name;
-        } else {
-            String name = String.format(RPC_BEAN_NAME_FORMAT.replaceFirst("_%s", ""), cmdType.getCode());
-            log.debug("getRpcBeanName->{}", name);
-            return name;
-        }
-    }
-
-
     public TransactionResourceProxy loadTransactionResourceProxy(String beanName) {
         String name = String.format(TRANSACTION_BEAN_NAME_FORMAT, beanName.toLowerCase());
         return spring.getBean(name, TransactionResourceProxy.class);
     }
 
-
-    private DTXLocalControl loadDTXLocalControl(String beanName) {
-        return spring.getBean(beanName, DTXLocalControl.class);
-    }
-
-    public DTXLocalControl loadDTXLocalControl(String transactionType, DTXPropagationState lcnTransactionState) {
-        return loadDTXLocalControl(getControlBeanName(transactionType, lcnTransactionState));
-    }
-
-    public RpcExecuteService loadRpcExecuteService(String transactionType, LCNCmdType cmdType) {
-        return loadRpcExecuteService(getRpcBeanName(transactionType, cmdType));
-    }
-
-    private RpcExecuteService loadRpcExecuteService(String beanName) {
-        return spring.getBean(beanName, RpcExecuteService.class);
+    public RpcExecuteService loadRpcExecuteService(LCNCmdType cmdType) {
+        String name = String.format(RPC_BEAN_NAME_FORMAT.replaceFirst("_%s", ""), cmdType.getCode());
+        log.debug("getRpcBeanName->{}", name);
+        return spring.getBean(name, RpcExecuteService.class);
     }
 
     public TransactionCleanService loadTransactionCleanService(String transactionType) {

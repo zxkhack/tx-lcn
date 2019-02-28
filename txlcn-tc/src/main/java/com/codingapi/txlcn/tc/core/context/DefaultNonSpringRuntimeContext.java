@@ -1,7 +1,7 @@
 package com.codingapi.txlcn.tc.core.context;
 
 import com.codingapi.txlcn.common.util.Transactions;
-import com.codingapi.txlcn.tc.jta.Invocation;
+import com.codingapi.txlcn.tc.core.Invocation;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.PatternMatchUtils;
 
@@ -23,17 +23,17 @@ public class DefaultNonSpringRuntimeContext implements NonSpringRuntimeContext {
     }
 
     @Override
-    public void cacheTransactionAttributes(String mappedMethodName, Map<Object, Object> attributes) {
+    public void cacheTransactionAttribute(String mappedMethodName, Map<Object, Object> attributes) {
         MAP.put(mappedMethodName, attributes);
     }
 
     @Override
-    public TransactionAttributes getTransactionAttributes(String unitId) {
+    public TransactionAttribute getTransactionAttribute(String unitId) {
         return fromMap(MAP.get(unitId), unitId);
     }
 
     @Override
-    public TransactionAttributes getTransactionAttributes(Invocation invocation) {
+    public TransactionAttribute getTransactionAttribute(Invocation invocation) {
         String unitId = Transactions.unitId(invocation.getMethod().toString());
         if (!ClassUtils.isUserLevelMethod(invocation.getMethod())) {
             return null;
@@ -69,14 +69,14 @@ public class DefaultNonSpringRuntimeContext implements NonSpringRuntimeContext {
         return PatternMatchUtils.simpleMatch(mappedName, methodName);
     }
 
-    private TransactionAttributes fromMap(Map<Object, Object> attrs, String unitId) {
-        TransactionAttributes transactionAttributes = new TransactionAttributes();
-        transactionAttributes.setUnitId(unitId);
-        transactionAttributes.setTransactionType((String) attrs.get(TRANSACTION_TYPE));
-        transactionAttributes.setCommitBeanName((String) attrs.get(TRANSACTION_COMMIT_BEAN));
-        transactionAttributes.setCommitMethod((String) attrs.get(TRANSACTION_COMMIT_METHOD));
-        transactionAttributes.setRollbackBeanName((String) attrs.get(TRANSACTION_ROLLBACK_BEAN));
-        transactionAttributes.setRollbackBeanName((String) attrs.get(TRANSACTION_ROLLBACK_METHOD));
-        return transactionAttributes;
+    private TransactionAttribute fromMap(Map<Object, Object> attrs, String unitId) {
+        TransactionAttribute transactionAttribute = new TransactionAttribute();
+        transactionAttribute.setUnitId(unitId);
+        transactionAttribute.setTransactionType((String) attrs.get(TRANSACTION_TYPE));
+        transactionAttribute.setCommitBeanName((String) attrs.get(TRANSACTION_COMMIT_BEAN));
+        transactionAttribute.setCommitMethod((String) attrs.get(TRANSACTION_COMMIT_METHOD));
+        transactionAttribute.setRollbackBeanName((String) attrs.get(TRANSACTION_ROLLBACK_BEAN));
+        transactionAttribute.setRollbackMethod((String) attrs.get(TRANSACTION_ROLLBACK_METHOD));
+        return transactionAttribute;
     }
 }

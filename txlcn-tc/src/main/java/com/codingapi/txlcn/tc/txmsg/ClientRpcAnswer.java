@@ -64,10 +64,8 @@ public class ClientRpcAnswer implements RpcAnswer, DisposableBean {
         executorService.submit(() -> {
             log.debug("Receive Message: {}", rpcCmd.getMsg());
             TransactionCmd transactionCmd = MessageParser.parser(rpcCmd);
-            String transactionType = transactionCmd.getTransactionType();
             String action = transactionCmd.getMsg().getAction();
-            RpcExecuteService executeService =
-                    transactionBeanHelper.loadRpcExecuteService(transactionType, transactionCmd.getType());
+            RpcExecuteService executeService = transactionBeanHelper.loadRpcExecuteService(transactionCmd.getType());
             MessageDto messageDto = null;
             try {
                 Serializable message = executeService.execute(transactionCmd);

@@ -1,6 +1,6 @@
 package com.codingapi.txlcn.tc.core.context;
 
-import com.codingapi.txlcn.tc.jta.Invocation;
+import com.codingapi.txlcn.tc.core.Invocation;
 
 import java.util.Map;
 
@@ -26,9 +26,9 @@ public interface NonSpringRuntimeContext {
         return new DefaultNonSpringRuntimeContext();
     }
 
-    void cacheTransactionAttributes(String mappedMethodName, Map<Object, Object> attributes);
+    void cacheTransactionAttribute(String mappedMethodName, Map<Object, Object> attributes);
 
-    TransactionAttributes getTransactionAttributes(String unitId);
+    TransactionAttribute getTransactionAttribute(String unitId);
 
-    TransactionAttributes getTransactionAttributes(Invocation invocation);
+    TransactionAttribute getTransactionAttribute(Invocation invocation);
 }

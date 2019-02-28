@@ -16,14 +16,12 @@
 package com.codingapi.txlcn.tc.core.template;
 
 import com.codingapi.txlcn.common.exception.LcnBusinessException;
-import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.common.exception.TransactionException;
-import com.codingapi.txlcn.common.util.Transactions;
 import com.codingapi.txlcn.logger.TxLogger;
 import com.codingapi.txlcn.tc.aspect.TransactionInfo;
 import com.codingapi.txlcn.tc.core.DTXLocalContext;
-import com.codingapi.txlcn.tc.core.checking.DTXChecking;
-import com.codingapi.txlcn.tc.core.checking.DTXExceptionHandler;
+import com.codingapi.txlcn.tc.core.check.DTXChecking;
+import com.codingapi.txlcn.tc.core.check.DTXExceptionHandler;
 import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
 import com.codingapi.txlcn.tc.corelog.aspect.AspectLogger;
 import com.codingapi.txlcn.tc.txmsg.ReliableMessenger;
@@ -50,7 +48,7 @@ public class TransactionControlTemplate {
 
     private final DTXExceptionHandler dtxExceptionHandler;
 
-    private final TransactionCleanTemplate transactionCleanTemplate;
+    private final TransactionCleanupTemplate transactionCleanupTemplate;
 
     private final ReliableMessenger reliableMessenger;
 
@@ -59,12 +57,12 @@ public class TransactionControlTemplate {
     @Autowired
     public TransactionControlTemplate(AspectLogger aspectLogger, DTXChecking dtxChecking,
                                       DTXExceptionHandler dtxExceptionHandler,
-                                      TransactionCleanTemplate transactionCleanTemplate,
+                                      TransactionCleanupTemplate transactionCleanupTemplate,
                                       ReliableMessenger reliableMessenger, TCGlobalContext globalContext) {
         this.aspectLogger = aspectLogger;
         this.dtxChecking = dtxChecking;
         this.dtxExceptionHandler = dtxExceptionHandler;
-        this.transactionCleanTemplate = transactionCleanTemplate;
+        this.transactionCleanupTemplate = transactionCleanupTemplate;
         this.reliableMessenger = reliableMessenger;
         this.globalContext = globalContext;
     }
@@ -138,23 +136,20 @@ public class TransactionControlTemplate {
      * @param transactionType transactionType
      * @param state           transactionState
      */
-    public void notifyGroup(String groupId, String unitId, String transactionType, int state) {
+    public int notifyGroup(String groupId, String unitId, String transactionType, int state) {
         try {
             txLogger.txTrace(
                     groupId, unitId, "notify group > transaction type: {}, state: {}.", transactionType, state);
             if (globalContext.isDTXTimeout()) {
                 throw new LcnBusinessException("dtx timeout.");
             }
-            state = reliableMessenger.notifyGroup(groupId, state);
-            transactionCleanTemplate.clean(groupId, unitId, transactionType, state);
-        } catch (TransactionClearException e) {
-            txLogger.trace(groupId, unitId, Transactions.TE, "clean transaction fail.");
+            return reliableMessenger.notifyGroup(groupId, state);
         } catch (RpcException e) {
             dtxExceptionHandler.handleNotifyGroupMessageException(Arrays.asList(groupId, state, unitId, transactionType), e);
         } catch (LcnBusinessException e) {
             // 关闭事务组失败
             dtxExceptionHandler.handleNotifyGroupBusinessException(Arrays.asList(groupId, state, unitId, transactionType), e.getCause());
         }
-        txLogger.txTrace(groupId, unitId, "notify group exception state {}.", state);
+        return state;
     }
 }

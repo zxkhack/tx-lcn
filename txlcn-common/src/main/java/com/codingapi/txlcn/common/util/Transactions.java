@@ -15,8 +15,11 @@
  */
 package com.codingapi.txlcn.common.util;
 
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.util.DigestUtils;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -55,6 +58,14 @@ public class Transactions {
      * 分布式事务传播类型 Properties传递参数key
      */
     public static final String DTX_PROPAGATION = "DTX_PROPAGATION";
+
+
+    public static final List<String> VALID_TRANSACTION_TYPES = Arrays.asList(TCC, LCN, TXC);
+
+    public static final List<String> VALID_PROPAGATION = Arrays.asList("required", "supports");
+
+    public static final List<Integer> VALID_PROPAGATION_NUMBERS =
+            Arrays.asList(TransactionDefinition.PROPAGATION_REQUIRED, TransactionDefinition.PROPAGATION_SUPPORTS);
 
     /////////// 工具方法  ////////////////////////////////////////////
 

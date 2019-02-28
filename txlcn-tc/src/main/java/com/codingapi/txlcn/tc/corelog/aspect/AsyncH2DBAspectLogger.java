@@ -89,7 +89,7 @@ public class AsyncH2DBAspectLogger implements AspectLogger {
             long t1 = System.currentTimeMillis();
             boolean res = txLogHelper.delete(groupId.hashCode(), unitId.hashCode());
             long t2 = System.currentTimeMillis();
-            log.debug("async clear aspect log. result:{}, groupId: {}, used time: {}ms", res, groupId, (t2 - t1));
+            log.debug("async clean aspect log. result:{}, groupId: {}, used time: {}ms", res, groupId, (t2 - t1));
         });
     }
 }

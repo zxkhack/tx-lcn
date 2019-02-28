@@ -15,7 +15,6 @@
  */
 package com.codingapi.txlcn.tc.aspect;
 
-import com.codingapi.txlcn.tc.aspect.weave.DTXResourceWeaver;
 import com.codingapi.txlcn.tc.config.TxClientConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -54,6 +53,5 @@ public class DataSourceAspect implements Ordered {
     public int getOrder() {
         return txClientConfig.getResourceOrder();
     }
-
 
 }

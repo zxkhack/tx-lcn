@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.config;
 
-import com.codingapi.txlcn.tc.core.transaction.txc.TxcConfiguration;
+import com.codingapi.txlcn.tc.core.mode.txc.TxcConfiguration;
 import org.springframework.context.annotation.ImportSelector;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.lang.NonNull;

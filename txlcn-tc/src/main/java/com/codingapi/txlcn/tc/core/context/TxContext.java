@@ -19,9 +19,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Description:
  * Date: 19-1-16 下午9:23
@@ -53,8 +50,4 @@ public class TxContext {
      */
     private long createTime = System.currentTimeMillis();
 
-    /**
-     * 上下文内分布式事务类型
-     */
-    private Set<String> transactionTypes = new HashSet<>(6);
 }

@@ -25,12 +25,17 @@ import java.lang.annotation.*;
  * Date: 1/19/19
  *
  * @author ujued
- * @since 5.0.2.dev
+ * @since 5.0.0
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
 @Import(value = {TCAutoConfiguration.class, DependenciesImportSelector.class})
 public @interface EnableDistributedTransaction {
+    /**
+     * 是否允许TXC事务模式
+     *
+     * @return result
+     */
     boolean enableTxc() default true;
 }

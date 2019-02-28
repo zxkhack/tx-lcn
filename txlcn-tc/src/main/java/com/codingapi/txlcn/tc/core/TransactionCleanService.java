@@ -26,7 +26,21 @@ import com.codingapi.txlcn.common.exception.TransactionClearException;
 public interface TransactionCleanService {
 
     /**
-     * 事务清理业务
+     * 第一阶段清理事务
+     *
+     * @param groupId
+     * @param state
+     * @param unitId
+     * @param unitType
+     * @throws TransactionClearException
+     */
+    default void firstPhase(String groupId, int state, String unitId, String unitType) throws TransactionClearException {
+    }
+
+    ;
+
+    /**
+     * 第二阶段清理事务
      *
      * @param groupId  groupId
      * @param state    事务状态 1 提交 0 回滚
@@ -34,5 +48,5 @@ public interface TransactionCleanService {
      * @param unitType 事务类型
      * @throws TransactionClearException TransactionClearException
      */
-    void clear(String groupId, int state, String unitId, String unitType) throws TransactionClearException;
+    void secondPhase(String groupId, int state, String unitId, String unitType) throws TransactionClearException;
 }

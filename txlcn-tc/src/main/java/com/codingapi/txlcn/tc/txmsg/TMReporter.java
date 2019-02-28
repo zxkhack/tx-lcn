@@ -16,7 +16,7 @@
 package com.codingapi.txlcn.tc.txmsg;
 
 import com.codingapi.txlcn.logger.TxLogger;
-import com.codingapi.txlcn.tc.core.transaction.txc.analy.def.bean.StatementInfo;
+import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.StatementInfo;
 import com.codingapi.txlcn.txmsg.exception.RpcException;
 import com.codingapi.txlcn.txmsg.params.TxExceptionParams;
 import org.springframework.beans.factory.annotation.Autowired;

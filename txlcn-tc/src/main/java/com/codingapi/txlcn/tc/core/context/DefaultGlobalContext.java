@@ -16,14 +16,12 @@
 package com.codingapi.txlcn.tc.core.context;
 
 import com.codingapi.txlcn.common.exception.TCGlobalContextException;
-import com.codingapi.txlcn.common.exception.TransactionException;
 import com.codingapi.txlcn.common.util.function.Supplier;
 import com.codingapi.txlcn.tc.config.TxClientConfig;
-import com.codingapi.txlcn.tc.core.TccTransactionInfo;
-import com.codingapi.txlcn.tc.core.transaction.lcn.resource.LcnConnectionProxy;
-import com.codingapi.txlcn.tc.core.transaction.txc.analy.def.PrimaryKeysProvider;
-import com.codingapi.txlcn.tc.core.transaction.txc.analy.def.bean.TableStruct;
-import com.codingapi.txlcn.tc.jta.Invocation;
+import com.codingapi.txlcn.tc.core.mode.lcn.LcnConnectionProxy;
+import com.codingapi.txlcn.tc.core.mode.txc.analy.def.PrimaryKeysProvider;
+import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.TableStruct;
+import com.codingapi.txlcn.tc.core.Invocation;
 import com.codingapi.txlcn.tracing.TracingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +52,23 @@ public class DefaultGlobalContext implements TCGlobalContext {
 
     @Autowired
     public DefaultGlobalContext(AttachmentCache attachmentCache, TxClientConfig clientConfig,
-                                @Autowired(required = false) List<PrimaryKeysProvider> primaryKeysProviders) {
+                                @Autowired(required = false) List<PrimaryKeysProvider> primaryKeysProviders,
+                                @Autowired(required = false) List<TransactionModeProperties> transactionModePropertiesList) {
         this.attachmentCache = attachmentCache;
         this.primaryKeysProviders = primaryKeysProviders;
         this.clientConfig = clientConfig;
+        cacheTxModeProperties(transactionModePropertiesList);
+    }
+
+    private void cacheTxModeProperties(List<TransactionModeProperties> propertiesList) {
+        if (Objects.nonNull(propertiesList)) {
+            propertiesList.forEach(properties -> {
+                Properties props = properties.provide();
+                if (Objects.nonNull(props)) {
+                    props.forEach(DefaultGlobalContext.this::cacheIfAbsentProperty);
+                }
+            });
+        }
     }
 
     @Override
@@ -84,23 +95,6 @@ public class DefaultGlobalContext implements TCGlobalContext {
             throw new TCGlobalContextException("non lcn connection.");
         }
         return collections;
-    }
-
-    @Override
-    public TccTransactionInfo tccTransactionInfo(String unitId, Supplier<TccTransactionInfo, TransactionException> supplier)
-            throws TransactionException {
-        String unitTransactionInfoKey = unitId + ".tcc.transaction";
-        if (Objects.isNull(supplier)) {
-            return attachmentCache.attachment(unitTransactionInfoKey);
-        }
-
-        if (attachmentCache.containsKey(unitTransactionInfoKey)) {
-            return attachmentCache.attachment(unitTransactionInfoKey);
-        }
-
-        TccTransactionInfo tccTransactionInfo = supplier.get();
-        attachmentCache.attach(unitTransactionInfoKey, tccTransactionInfo);
-        return tccTransactionInfo;
     }
 
     @Override
@@ -212,6 +206,19 @@ public class DefaultGlobalContext implements TCGlobalContext {
         this.attachmentCache.attach(groupId, "rollback-only", true);
     }
 
+    @Override
+    public boolean isProxyConnection(String transactionType) {
+        return this.attachmentCache.containsKey(transactionType + ".connection.proxy")
+                && this.attachmentCache.attachment(transactionType + ".connection.proxy").equals("true");
+    }
+
+    @Override
+    public void cacheIfAbsentProperty(Object key, Object value) {
+        if (!this.attachmentCache.containsKey(key)) {
+            this.attachmentCache.attach(key, value);
+        }
+    }
+
     /**
      * 清理事务时调用
      *
@@ -224,17 +231,17 @@ public class DefaultGlobalContext implements TCGlobalContext {
     }
 
     @Override
-    public void cacheTransactionAttributes(String mappedMethodName, Map<Object, Object> attributes) {
-        NonSpringRuntimeContext.instance().cacheTransactionAttributes(mappedMethodName, attributes);
+    public void cacheTransactionAttribute(String mappedMethodName, Map<Object, Object> attributes) {
+        NonSpringRuntimeContext.instance().cacheTransactionAttribute(mappedMethodName, attributes);
     }
 
     @Override
-    public TransactionAttributes getTransactionAttributes(String unitId) {
-        return NonSpringRuntimeContext.instance().getTransactionAttributes(unitId);
+    public TransactionAttribute getTransactionAttribute(String unitId) {
+        return NonSpringRuntimeContext.instance().getTransactionAttribute(unitId);
     }
 
     @Override
-    public TransactionAttributes getTransactionAttributes(Invocation invocation) {
-        return NonSpringRuntimeContext.instance().getTransactionAttributes(invocation);
+    public TransactionAttribute getTransactionAttribute(Invocation invocation) {
+        return NonSpringRuntimeContext.instance().getTransactionAttribute(invocation);
     }
 }

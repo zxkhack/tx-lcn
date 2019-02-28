@@ -17,7 +17,6 @@ package com.codingapi.txlcn.tc.core;
 
 
 import com.codingapi.txlcn.tc.aspect.TransactionInfo;
-import com.codingapi.txlcn.tc.jta.Invocation;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,7 +27,7 @@ import java.util.Objects;
 
 /**
  * 分布式事务远程调用控制对象
- * ！！！不推荐用户业务使用，API变更性大，使用不当有可能造成事务流程出错 ！！！
+ * ！！！不推荐经典应用程序使用，使用不当有可能造成事务流程出错 ！！！
  * <p>
  * Created by lorne on 2017/6/5.
  */
@@ -53,8 +52,14 @@ public class DTXLocalContext {
      */
     private String unitId;
 
+    /**
+     * 是否是事务发起方
+     */
     private boolean originalBranch;
 
+    /**
+     * 事务信息
+     */
     private TransactionInfo transactionInfo;
 
     /**
@@ -89,11 +94,6 @@ public class DTXLocalContext {
      * 系统分布式事务状态
      */
     private int sysTransactionState = Status.STATUS_UNKNOWN;
-
-    /**
-     * 用户分布式事务状态
-     */
-    private int userTransactionState = -1;
 
     /**
      * 是否代理资源
@@ -141,7 +141,7 @@ public class DTXLocalContext {
     /**
      * 设置代理资源
      */
-    public static void makeProxy() {
+    public static void makeProxyConnection() {
         if (currentLocal.get() != null) {
             cur().proxyTmp = cur().proxy;
             cur().proxy = true;
@@ -151,7 +151,7 @@ public class DTXLocalContext {
     /**
      * 设置不代理资源
      */
-    public static void makeUnProxy() {
+    public static void makeUnProxyConnection() {
         if (currentLocal.get() != null) {
             cur().proxyTmp = cur().proxy;
             cur().proxy = false;

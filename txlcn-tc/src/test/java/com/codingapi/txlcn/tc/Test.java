@@ -1,6 +1,6 @@
 package com.codingapi.txlcn.tc;
 
-import com.codingapi.txlcn.tc.core.transaction.txc.analy.util.SqlUtils;
+import com.codingapi.txlcn.tc.core.mode.txc.analy.util.SqlUtils;
 
 public class Test {
     public static void main(String[] args) {

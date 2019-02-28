@@ -16,11 +16,9 @@
 package com.codingapi.txlcn.tc.core.context;
 
 import com.codingapi.txlcn.common.exception.TCGlobalContextException;
-import com.codingapi.txlcn.common.exception.TransactionException;
 import com.codingapi.txlcn.common.util.function.Supplier;
-import com.codingapi.txlcn.tc.core.TccTransactionInfo;
-import com.codingapi.txlcn.tc.core.transaction.lcn.resource.LcnConnectionProxy;
-import com.codingapi.txlcn.tc.core.transaction.txc.analy.def.bean.TableStruct;
+import com.codingapi.txlcn.tc.core.mode.lcn.LcnConnectionProxy;
+import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.TableStruct;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -62,18 +60,6 @@ public interface TCGlobalContext extends NonSpringRuntimeContext {
     Collection<Object> findLcnConnections(String groupId) throws TCGlobalContextException;
 
     /**
-     * get tcc info
-     *
-     * @param unitId   unitId
-     * @param supplier supplier
-     * @return tcc info
-     * @throws TransactionException TransactionException
-     */
-    TccTransactionInfo tccTransactionInfo(String unitId, Supplier<TccTransactionInfo, TransactionException> supplier)
-            throws TransactionException;
-
-
-    /**
      * txc type lock
      *
      * @param groupId   groupId
@@ -103,7 +89,7 @@ public interface TCGlobalContext extends NonSpringRuntimeContext {
     TableStruct tableStruct(String table, Supplier<TableStruct, SQLException> structSupplier) throws SQLException;
 
     /**
-     * clean group
+     * secondPhase group
      *
      * @param groupId groupId
      */
@@ -171,4 +157,20 @@ public interface TCGlobalContext extends NonSpringRuntimeContext {
      * @param groupId groupId
      */
     void setRollbackOnly(String groupId);
+
+    /**
+     * 是否代理java.sql.Connection
+     *
+     * @param transactionType transactionType
+     * @return result
+     */
+    boolean isProxyConnection(String transactionType);
+
+    /**
+     * 缓存属性（如果不存在）
+     *
+     * @param key   key
+     * @param value value
+     */
+    void cacheIfAbsentProperty(Object key, Object value);
 }
