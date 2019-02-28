@@ -18,7 +18,7 @@ package com.codingapi.txlcn.tc.core.template;
 import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.logger.TxLogger;
 import com.codingapi.txlcn.tc.core.check.DTXChecking;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.corelog.aspect.AspectLogger;
 import com.codingapi.txlcn.tc.support.TxLcnBeanHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,11 +41,11 @@ public class TransactionCleanupTemplate {
 
     private static final TxLogger txLogger = TxLogger.newLogger(TransactionCleanupTemplate.class);
 
-    private final TCGlobalContext globalContext;
+    private final BranchContext globalContext;
 
     @Autowired
     public TransactionCleanupTemplate(TxLcnBeanHelper transactionBeanHelper, DTXChecking dtxChecking,
-                                      AspectLogger aspectLogger, TCGlobalContext globalContext) {
+                                      AspectLogger aspectLogger, BranchContext globalContext) {
         this.transactionBeanHelper = transactionBeanHelper;
         this.dtxChecking = dtxChecking;
         this.aspectLogger = aspectLogger;

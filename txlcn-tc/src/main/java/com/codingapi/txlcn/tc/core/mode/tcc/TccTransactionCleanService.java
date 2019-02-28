@@ -19,7 +19,7 @@ import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.common.util.Maps;
 import com.codingapi.txlcn.tc.core.DTXLocalContext;
 import com.codingapi.txlcn.tc.core.TransactionCleanService;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.core.context.TransactionAttribute;
 import com.codingapi.txlcn.tc.support.TxLcnBeanHelper;
 import com.codingapi.txlcn.tc.txmsg.TMReporter;
@@ -47,13 +47,13 @@ public class TccTransactionCleanService implements TransactionCleanService {
 
     private final TMReporter tmReporter;
 
-    private final TCGlobalContext globalContext;
+    private final BranchContext globalContext;
 
     private final TxLcnBeanHelper beanHelper;
 
     @Autowired
     public TccTransactionCleanService(ApplicationContext applicationContext,
-                                      TMReporter tmReporter, TCGlobalContext globalContext, TxLcnBeanHelper beanHelper) {
+                                      TMReporter tmReporter, BranchContext globalContext, TxLcnBeanHelper beanHelper) {
         this.applicationContext = applicationContext;
         this.tmReporter = tmReporter;
         this.globalContext = globalContext;

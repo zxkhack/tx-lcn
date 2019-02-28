@@ -21,7 +21,7 @@ import com.codingapi.txlcn.logger.TxLogger;
 import com.codingapi.txlcn.txmsg.exception.RpcException;
 import com.codingapi.txlcn.txmsg.params.TxExceptionParams;
 import com.codingapi.txlcn.tc.config.TxClientConfig;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.core.context.TxContext;
 import com.codingapi.txlcn.tc.corelog.aspect.AspectLogger;
 import com.codingapi.txlcn.tc.txmsg.ReliableMessenger;
@@ -63,11 +63,11 @@ public class SimpleDTXChecking implements DTXChecking, DisposableBean {
 
     private final TMReporter tmReporter;
 
-    private final TCGlobalContext globalContext;
+    private final BranchContext globalContext;
 
     @Autowired
     public SimpleDTXChecking(TxClientConfig clientConfig, AspectLogger aspectLogger, TMReporter tmReporter,
-                             TCGlobalContext globalContext, ReliableMessenger reliableMessenger) {
+                             BranchContext globalContext, ReliableMessenger reliableMessenger) {
         this.clientConfig = clientConfig;
         this.aspectLogger = aspectLogger;
         this.tmReporter = tmReporter;

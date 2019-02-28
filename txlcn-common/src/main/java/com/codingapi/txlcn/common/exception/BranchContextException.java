@@ -21,23 +21,23 @@ package com.codingapi.txlcn.common.exception;
  *
  * @author ujued
  */
-public class TCGlobalContextException extends Exception {
-    public TCGlobalContextException() {
+public class BranchContextException extends Exception {
+    public BranchContextException() {
     }
 
-    public TCGlobalContextException(String message) {
+    public BranchContextException(String message) {
         super(message);
     }
 
-    public TCGlobalContextException(String message, Throwable cause) {
+    public BranchContextException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public TCGlobalContextException(Throwable cause) {
+    public BranchContextException(Throwable cause) {
         super(cause);
     }
 
-    public TCGlobalContextException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public BranchContextException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 }

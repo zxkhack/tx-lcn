@@ -22,7 +22,7 @@ import com.codingapi.txlcn.txmsg.params.NotifyUnitParams;
 import com.codingapi.txlcn.tc.txmsg.RpcExecuteService;
 import com.codingapi.txlcn.tc.txmsg.TransactionCmd;
 import com.codingapi.txlcn.tc.core.context.TxContext;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.core.template.TransactionCleanupTemplate;
 import org.springframework.stereotype.Service;
 
@@ -42,9 +42,9 @@ public class NotifyUnitService implements RpcExecuteService {
 
     private final TransactionCleanupTemplate transactionCleanupTemplate;
 
-    private TCGlobalContext globalContext;
+    private BranchContext globalContext;
 
-    public NotifyUnitService(TransactionCleanupTemplate transactionCleanupTemplate, TCGlobalContext globalContext) {
+    public NotifyUnitService(TransactionCleanupTemplate transactionCleanupTemplate, BranchContext globalContext) {
         this.transactionCleanupTemplate = transactionCleanupTemplate;
         this.globalContext = globalContext;
     }

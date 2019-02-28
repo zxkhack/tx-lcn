@@ -15,10 +15,10 @@
  */
 package com.codingapi.txlcn.tc.core.mode.lcn;
 
-import com.codingapi.txlcn.common.exception.TCGlobalContextException;
+import com.codingapi.txlcn.common.exception.BranchContextException;
 import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.tc.core.TransactionCleanService;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -36,17 +36,17 @@ import java.util.Collection;
 @Slf4j
 public class LcnTransactionCleanService implements TransactionCleanService {
 
-    private final TCGlobalContext globalContext;
+    private final BranchContext globalContext;
 
     @Autowired
-    public LcnTransactionCleanService(TCGlobalContext globalContext) {
+    public LcnTransactionCleanService(BranchContext globalContext) {
         this.globalContext = globalContext;
     }
 
     @Override
     public void secondPhase(String groupId, int state, String unitId, String unitType) throws TransactionClearException {
         try {
-            Collection<Object> connections = globalContext.findLcnConnections(groupId);
+            Collection<Object> connections = globalContext.lcnConnections(groupId);
             for (Object conn : connections) {
                 if (state == 1) {
                     log.debug("real commit connection: {}", conn);
@@ -56,8 +56,8 @@ public class LcnTransactionCleanService implements TransactionCleanService {
                 log.debug("real rollback connection: {}", conn);
                 ((LcnConnectionProxy) conn).realRollback();
             }
-        } catch (TCGlobalContextException | SQLException e) {
-            // ignore TCGlobalContextException, todo notify exception
+        } catch (BranchContextException | SQLException e) {
+            // ignore BranchContextException, todo notify exception
         }
     }
 }

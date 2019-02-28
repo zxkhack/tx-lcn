@@ -1,6 +1,6 @@
 package com.codingapi.txlcn.tc.support;
 
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tracing.TracingContext;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -21,11 +21,11 @@ public class DTXUserControls implements ApplicationContextAware {
 
     private static ApplicationContext applicationContext;
 
-    private static TCGlobalContext globalContext;
+    private static BranchContext globalContext;
 
     public static void rollbackGroup(String groupId) {
         if (Objects.isNull(globalContext)) {
-            globalContext = applicationContext.getBean(TCGlobalContext.class);
+            globalContext = applicationContext.getBean(BranchContext.class);
         }
         globalContext.setRollbackOnly(groupId);
     }

@@ -13,18 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingapi.txlcn.tc.core.mode.xa;
+package com.codingapi.txlcn.tc.aspect;
 
-import javax.transaction.xa.XAResource;
-import java.sql.Connection;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+import java.lang.reflect.Method;
 
 /**
  * Description:
- * Date: 19-2-25 上午10:43
+ * Date: 19-2-27 上午11:19
  *
  * @author ujued
  */
-public interface XAResourceCreator {
-
-    XAResource create(Connection connection);
+@Data
+@AllArgsConstructor
+public class Invocation {
+    private Method method;
+    private Object target;
+    private Object[] args;
 }

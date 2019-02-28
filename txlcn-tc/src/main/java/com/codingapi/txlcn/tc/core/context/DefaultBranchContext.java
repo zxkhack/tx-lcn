@@ -15,13 +15,13 @@
  */
 package com.codingapi.txlcn.tc.core.context;
 
-import com.codingapi.txlcn.common.exception.TCGlobalContextException;
+import com.codingapi.txlcn.common.exception.BranchContextException;
 import com.codingapi.txlcn.common.util.function.Supplier;
 import com.codingapi.txlcn.tc.config.TxClientConfig;
 import com.codingapi.txlcn.tc.core.mode.lcn.LcnConnectionProxy;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.PrimaryKeysProvider;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.TableStruct;
-import com.codingapi.txlcn.tc.core.Invocation;
+import com.codingapi.txlcn.tc.aspect.Invocation;
 import com.codingapi.txlcn.tracing.TracingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
  */
 @Component
 @Slf4j
-public class DefaultGlobalContext implements TCGlobalContext {
+public class DefaultBranchContext implements BranchContext {
 
     private final AttachmentCache attachmentCache;
 
@@ -51,7 +51,7 @@ public class DefaultGlobalContext implements TCGlobalContext {
     private final TxClientConfig clientConfig;
 
     @Autowired
-    public DefaultGlobalContext(AttachmentCache attachmentCache, TxClientConfig clientConfig,
+    public DefaultBranchContext(AttachmentCache attachmentCache, TxClientConfig clientConfig,
                                 @Autowired(required = false) List<PrimaryKeysProvider> primaryKeysProviders,
                                 @Autowired(required = false) List<TransactionModeProperties> transactionModePropertiesList) {
         this.attachmentCache = attachmentCache;
@@ -65,41 +65,38 @@ public class DefaultGlobalContext implements TCGlobalContext {
             propertiesList.forEach(properties -> {
                 Properties props = properties.provide();
                 if (Objects.nonNull(props)) {
-                    props.forEach(DefaultGlobalContext.this::cacheIfAbsentProperty);
+                    props.forEach(DefaultBranchContext.this::cacheIfAbsentProperty);
                 }
             });
         }
     }
 
     @Override
-    public void cacheLcnConnection(String groupId, DataSource dataSource, LcnConnectionProxy connectionProxy) {
-        attachmentCache.attach(groupId, dataSource, connectionProxy);
-    }
-
-    @Override
-    public LcnConnectionProxy getLcnConnection(String groupId, DataSource dataSource) throws TCGlobalContextException {
+    public LcnConnectionProxy lcnConnection(String groupId, DataSource dataSource, Supplier<LcnConnectionProxy, SQLException> supplier) throws SQLException {
         if (attachmentCache.containsKey(groupId, dataSource)) {
             return attachmentCache.attachment(groupId, dataSource);
         }
-        throw new TCGlobalContextException("non exists lcn connection");
+        LcnConnectionProxy lcnConnectionProxy = supplier.get();
+        attachmentCache.attach(groupId, dataSource, lcnConnectionProxy);
+        return lcnConnectionProxy;
     }
 
     @Override
-    public Collection<Object> findLcnConnections(String groupId) throws TCGlobalContextException {
+    public Collection<Object> lcnConnections(String groupId) throws BranchContextException {
         Collection<Object> collections = attachmentCache.attachments(groupId).entrySet()
                 .stream()
                 .filter(entry -> entry.getKey() instanceof DataSource)
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toSet());
         if (collections.isEmpty()) {
-            throw new TCGlobalContextException("non lcn connection.");
+            throw new BranchContextException("non lcn connection.");
         }
         return collections;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void addTxcLockId(String groupId, String unitId, Set<String> lockIdList) {
+    public void prepareTxcLocks(String groupId, String unitId, Set<String> lockIdList) {
         String lockKey = unitId + ".txc.lock";
         if (attachmentCache.containsKey(groupId, lockKey)) {
             ((Set) attachmentCache.attachment(groupId, lockKey)).addAll(lockIdList);
@@ -110,12 +107,12 @@ public class DefaultGlobalContext implements TCGlobalContext {
     }
 
     @Override
-    public Set<String> findTxcLockSet(String groupId, String unitId) throws TCGlobalContextException {
+    public Set<String> txcLockSet(String groupId, String unitId) throws BranchContextException {
         String lockKey = unitId + ".txc.lock";
         if (attachmentCache.containsKey(groupId, lockKey)) {
             return attachmentCache.attachment(groupId, lockKey);
         }
-        throw new TCGlobalContextException("non exists lock id.");
+        throw new BranchContextException("non exists lock id.");
     }
 
     @Override
@@ -143,7 +140,7 @@ public class DefaultGlobalContext implements TCGlobalContext {
     }
 
     @Override
-    public TxContext startTx(boolean isOriginalBranch, String groupId) {
+    public void startTx(boolean isOriginalBranch, String groupId) {
         TxContext txContext = new TxContext();
         // 事务发起方判断
         txContext.setOriginalBranch(isOriginalBranch);
@@ -151,7 +148,6 @@ public class DefaultGlobalContext implements TCGlobalContext {
         String txContextKey = txContext.getGroupId() + ".dtx";
         attachmentCache.attach(txContextKey, txContext);
         log.debug("Start TxContext[{}]", txContext.getGroupId());
-        return txContext;
     }
 
     /**
@@ -189,7 +185,7 @@ public class DefaultGlobalContext implements TCGlobalContext {
     }
 
     @Override
-    public boolean isDTXTimeout() {
+    public boolean isTransactionTimeout() {
         if (!hasTxContext()) {
             throw new IllegalStateException("non TxContext.");
         }
@@ -197,7 +193,7 @@ public class DefaultGlobalContext implements TCGlobalContext {
     }
 
     @Override
-    public int dtxState(String groupId) {
+    public int transactionState(String groupId) {
         return this.attachmentCache.containsKey(groupId, "rollback-only") ? 0 : 1;
     }
 

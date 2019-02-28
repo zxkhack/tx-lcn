@@ -16,7 +16,7 @@
 package com.codingapi.txlcn.tc.core.mode.txc.analy;
 
 import com.codingapi.txlcn.tc.core.DTXLocalContext;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.SqlExecuteInterceptor;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.TxcService;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.*;
@@ -57,10 +57,10 @@ public class TxcSqlExecuteInterceptor implements SqlExecuteInterceptor {
 
     private final TxcService txcService;
 
-    private final TCGlobalContext globalContext;
+    private final BranchContext globalContext;
 
     @Autowired
-    public TxcSqlExecuteInterceptor(TableStructAnalyser tableStructAnalyser, TxcService txcService, TCGlobalContext globalContext) {
+    public TxcSqlExecuteInterceptor(TableStructAnalyser tableStructAnalyser, TxcService txcService, BranchContext globalContext) {
         this.tableStructAnalyser = tableStructAnalyser;
         this.txcService = txcService;
         this.globalContext = globalContext;

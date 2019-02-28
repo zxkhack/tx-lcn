@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.core.mode.txc.analy;
 
-import com.codingapi.txlcn.common.exception.TCGlobalContextException;
+import com.codingapi.txlcn.common.exception.BranchContextException;
 import com.codingapi.txlcn.common.exception.TxcLogicException;
 import com.codingapi.txlcn.common.lock.DTXLocks;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.*;
@@ -29,7 +29,7 @@ import com.codingapi.txlcn.tc.core.mode.txc.analy.undo.UndoLogAnalyser;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.util.SqlUtils;
 import com.codingapi.txlcn.tc.corelog.txc.TxcLogHelper;
 import com.codingapi.txlcn.tc.txmsg.ReliableMessenger;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,11 +59,11 @@ public class TxcServiceImpl implements TxcService {
 
     private final ReliableMessenger reliableMessenger;
 
-    private final TCGlobalContext globalContext;
+    private final BranchContext globalContext;
 
     @Autowired
     public TxcServiceImpl(TxcSqlExecutor txcSqlExecutor, TxcLogHelper txcLogHelper,
-                          ReliableMessenger reliableMessenger, TCGlobalContext globalContext) {
+                          ReliableMessenger reliableMessenger, BranchContext globalContext) {
         this.txcSqlExecutor = txcSqlExecutor;
         this.txcLogHelper = txcLogHelper;
         this.reliableMessenger = reliableMessenger;
@@ -84,7 +84,7 @@ public class TxcServiceImpl implements TxcService {
             if (!reliableMessenger.acquireLocks(groupId, lockIdSet, isXLock ? DTXLocks.X_LOCK : DTXLocks.S_LOCK)) {
                 throw new TxcLogicException("resource is locked! place try again later.");
             }
-            globalContext.addTxcLockId(groupId, unitId, lockIdSet);
+            globalContext.prepareTxcLocks(groupId, unitId, lockIdSet);
         } catch (RpcException e) {
             throw new TxcLogicException("can't contact to any TM for lock info. default error.");
         }
@@ -255,10 +255,10 @@ public class TxcServiceImpl implements TxcService {
     public void cleanTxc(String groupId, String unitId) throws TxcLogicException {
         // 清理事务单元相关锁
         try {
-            reliableMessenger.releaseLocks(globalContext.findTxcLockSet(groupId, unitId));
+            reliableMessenger.releaseLocks(globalContext.txcLockSet(groupId, unitId));
         } catch (RpcException e) {
             throw new TxcLogicException(e);
-        } catch (TCGlobalContextException e) {
+        } catch (BranchContextException e) {
             // ignored, if non lock to release.
         }
 

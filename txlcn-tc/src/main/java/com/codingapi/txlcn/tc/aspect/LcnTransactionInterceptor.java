@@ -17,9 +17,8 @@ package com.codingapi.txlcn.tc.aspect;
 
 import com.codingapi.txlcn.tc.core.DTXLocalContext;
 import com.codingapi.txlcn.tc.core.context.NonSpringRuntimeContext;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.core.context.TransactionAttribute;
-import com.codingapi.txlcn.tc.core.Invocation;
 import com.codingapi.txlcn.tracing.TracingContext;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.support.AopUtils;
@@ -40,9 +39,9 @@ import java.util.Properties;
  */
 public class LcnTransactionInterceptor extends TransactionInterceptor {
 
-    private final TCGlobalContext globalContext;
+    private final BranchContext globalContext;
 
-    public LcnTransactionInterceptor(TCGlobalContext globalContext) {
+    public LcnTransactionInterceptor(BranchContext globalContext) {
         this.globalContext = globalContext;
     }
 

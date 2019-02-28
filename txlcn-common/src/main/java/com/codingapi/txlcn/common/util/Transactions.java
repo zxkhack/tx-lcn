@@ -40,6 +40,8 @@ public class Transactions {
 
     public static final String TXC = "txc";
 
+    public static final String XA = "xa";
+
     /////////// 常量 //////////////////////
 
     public static final String TE = "Transaction Error";
@@ -60,7 +62,7 @@ public class Transactions {
     public static final String DTX_PROPAGATION = "DTX_PROPAGATION";
 
 
-    public static final List<String> VALID_TRANSACTION_TYPES = Arrays.asList(TCC, LCN, TXC);
+    public static final List<String> VALID_TRANSACTION_TYPES = Arrays.asList(TCC, LCN, TXC, XA);
 
     public static final List<String> VALID_PROPAGATION = Arrays.asList("required", "supports");
 

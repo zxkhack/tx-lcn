@@ -22,7 +22,7 @@ import com.codingapi.txlcn.tc.aspect.TransactionInfo;
 import com.codingapi.txlcn.tc.core.DTXLocalContext;
 import com.codingapi.txlcn.tc.core.check.DTXChecking;
 import com.codingapi.txlcn.tc.core.check.DTXExceptionHandler;
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.corelog.aspect.AspectLogger;
 import com.codingapi.txlcn.tc.txmsg.ReliableMessenger;
 import com.codingapi.txlcn.txmsg.exception.RpcException;
@@ -48,21 +48,17 @@ public class TransactionControlTemplate {
 
     private final DTXExceptionHandler dtxExceptionHandler;
 
-    private final TransactionCleanupTemplate transactionCleanupTemplate;
-
     private final ReliableMessenger reliableMessenger;
 
-    private final TCGlobalContext globalContext;
+    private final BranchContext globalContext;
 
     @Autowired
     public TransactionControlTemplate(AspectLogger aspectLogger, DTXChecking dtxChecking,
                                       DTXExceptionHandler dtxExceptionHandler,
-                                      TransactionCleanupTemplate transactionCleanupTemplate,
-                                      ReliableMessenger reliableMessenger, TCGlobalContext globalContext) {
+                                      ReliableMessenger reliableMessenger, BranchContext globalContext) {
         this.aspectLogger = aspectLogger;
         this.dtxChecking = dtxChecking;
         this.dtxExceptionHandler = dtxExceptionHandler;
-        this.transactionCleanupTemplate = transactionCleanupTemplate;
         this.reliableMessenger = reliableMessenger;
         this.globalContext = globalContext;
     }
@@ -111,7 +107,8 @@ public class TransactionControlTemplate {
         try {
             txLogger.txTrace(groupId, unitId, "join group > transaction type: {}", transactionType);
 
-            reliableMessenger.joinGroup(groupId, unitId, transactionType, DTXLocalContext.transactionState(globalContext.dtxState(groupId)));
+            reliableMessenger.joinGroup(
+                    groupId, unitId, transactionType, DTXLocalContext.transactionState(globalContext.transactionState(groupId)));
 
             txLogger.txTrace(groupId, unitId, "join group message over.");
 
@@ -138,11 +135,11 @@ public class TransactionControlTemplate {
      */
     public int notifyGroup(String groupId, String unitId, String transactionType, int state) {
         try {
-            txLogger.txTrace(
-                    groupId, unitId, "notify group > transaction type: {}, state: {}.", transactionType, state);
-            if (globalContext.isDTXTimeout()) {
+            if (globalContext.isTransactionTimeout()) {
                 throw new LcnBusinessException("dtx timeout.");
             }
+            txLogger.txTrace(
+                    groupId, unitId, "notify group > transaction type: {}, state: {}.", transactionType, state);
             return reliableMessenger.notifyGroup(groupId, state);
         } catch (RpcException e) {
             dtxExceptionHandler.handleNotifyGroupMessageException(Arrays.asList(groupId, state, unitId, transactionType), e);

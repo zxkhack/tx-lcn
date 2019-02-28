@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.core.context;
 
-import com.codingapi.txlcn.common.exception.TCGlobalContextException;
+import com.codingapi.txlcn.common.exception.BranchContextException;
 import com.codingapi.txlcn.common.util.function.Supplier;
 import com.codingapi.txlcn.tc.core.mode.lcn.LcnConnectionProxy;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.TableStruct;
@@ -31,33 +31,26 @@ import java.util.Set;
  *
  * @author ujued
  */
-public interface TCGlobalContext extends NonSpringRuntimeContext {
+public interface BranchContext extends NonSpringRuntimeContext {
 
     /**
      * set lcn connection
      *
-     * @param groupId         groupId
-     * @param connectionProxy connectionProxy
+     * @param groupId    groupId
+     * @param dataSource dataSource
+     * @param supplier   connection supplier
      */
-    void cacheLcnConnection(String groupId, DataSource dataSource, LcnConnectionProxy connectionProxy);
-
-    /**
-     * get lcn proxy
-     *
-     * @param groupId groupId
-     * @return connection proxy
-     * @throws TCGlobalContextException TCGlobalContextException
-     */
-    LcnConnectionProxy getLcnConnection(String groupId, DataSource dataSource) throws TCGlobalContextException;
+    LcnConnectionProxy lcnConnection(String groupId, DataSource dataSource, Supplier<LcnConnectionProxy, SQLException> supplier)
+            throws SQLException;
 
     /**
      * all connections about lcn.
      *
      * @param groupId groupId
      * @return collection of connections
-     * @throws TCGlobalContextException TCGlobalContextException
+     * @throws BranchContextException BranchContextException
      */
-    Collection<Object> findLcnConnections(String groupId) throws TCGlobalContextException;
+    Collection<Object> lcnConnections(String groupId) throws BranchContextException;
 
     /**
      * txc type lock
@@ -66,7 +59,7 @@ public interface TCGlobalContext extends NonSpringRuntimeContext {
      * @param unitId    unitId
      * @param lockIdSet lockIdSet
      */
-    void addTxcLockId(String groupId, String unitId, Set<String> lockIdSet);
+    void prepareTxcLocks(String groupId, String unitId, Set<String> lockIdSet);
 
     /**
      * find txc lock set
@@ -74,9 +67,9 @@ public interface TCGlobalContext extends NonSpringRuntimeContext {
      * @param groupId groupId
      * @param unitId  unitId
      * @return set
-     * @throws TCGlobalContextException TCGlobalContextException
+     * @throws BranchContextException BranchContextException
      */
-    Set<String> findTxcLockSet(String groupId, String unitId) throws TCGlobalContextException;
+    Set<String> txcLockSet(String groupId, String unitId) throws BranchContextException;
 
     /**
      * table struct info
@@ -89,7 +82,7 @@ public interface TCGlobalContext extends NonSpringRuntimeContext {
     TableStruct tableStruct(String table, Supplier<TableStruct, SQLException> structSupplier) throws SQLException;
 
     /**
-     * secondPhase group
+     * clear group
      *
      * @param groupId groupId
      */
@@ -97,10 +90,8 @@ public interface TCGlobalContext extends NonSpringRuntimeContext {
 
     /**
      * start tx
-     *
-     * @return tx context info
      */
-    TxContext startTx(boolean isOriginalBranch, String groupId);
+    void startTx(boolean isOriginalBranch, String groupId);
 
     /**
      * get tx context info by groupId
@@ -141,7 +132,7 @@ public interface TCGlobalContext extends NonSpringRuntimeContext {
      *
      * @return bool
      */
-    boolean isDTXTimeout();
+    boolean isTransactionTimeout();
 
     /**
      * 判断某个事务是否不允许提交
@@ -149,7 +140,7 @@ public interface TCGlobalContext extends NonSpringRuntimeContext {
      * @param groupId groupId
      * @return result
      */
-    int dtxState(String groupId);
+    int transactionState(String groupId);
 
     /**
      * 设置某个事务组不允许提交

@@ -1,6 +1,6 @@
 package com.codingapi.txlcn.tc;
 
-import com.codingapi.txlcn.tc.core.context.TCGlobalContext;
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.aspect.LcnAnnotationTransactionAttributeSource;
 import com.codingapi.txlcn.tc.aspect.LcnTransactionInterceptor;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -51,14 +51,16 @@ public class JtaManagementConfiguration extends AbstractTransactionManagementCon
     }
 
     @Bean
-    public TransactionInterceptor transactionInterceptor(JtaTransactionManager transactionManager, TCGlobalContext globalContext) {
-        LcnTransactionInterceptor transactionInterceptor = new LcnTransactionInterceptor(globalContext);
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
+    public TransactionInterceptor transactionInterceptor(JtaTransactionManager transactionManager, BranchContext branchContext) {
+        LcnTransactionInterceptor transactionInterceptor = new LcnTransactionInterceptor(branchContext);
         transactionInterceptor.setTransactionManager(transactionManager);
         transactionInterceptor.setTransactionAttributeSource(transactionAttributeSource());
         return transactionInterceptor;
     }
 
     @Bean
+    @Role(BeanDefinition.ROLE_INFRASTRUCTURE)
     public TransactionAttributeSource transactionAttributeSource() {
         return new LcnAnnotationTransactionAttributeSource();
     }

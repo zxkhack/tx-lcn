@@ -16,6 +16,7 @@
 package com.codingapi.txlcn.tc.core;
 
 
+import com.codingapi.txlcn.tc.aspect.Invocation;
 import com.codingapi.txlcn.tc.aspect.TransactionInfo;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -74,21 +75,6 @@ public class DTXLocalContext {
 
 
     ////////////////////////// volatile ///////////////////////////////
-
-    /**
-     * 是否需要销毁。什么时候需要？一个请求下来，这个模块有两个Unit被执行，那么被调方是不能销毁的，只能有上层调用方销毁
-     */
-    private boolean destroy = true;
-
-    /**
-     * 同事务组标识
-     */
-    private boolean inGroup;
-
-    /**
-     * 额外的附加值
-     */
-    private Object attachment;
 
     /**
      * 系统分布式事务状态
