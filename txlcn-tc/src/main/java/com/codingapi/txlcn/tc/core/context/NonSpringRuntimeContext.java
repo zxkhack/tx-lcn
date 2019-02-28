@@ -31,4 +31,12 @@ public interface NonSpringRuntimeContext {
     TransactionAttribute getTransactionAttribute(String unitId);
 
     TransactionAttribute getTransactionAttribute(Invocation invocation);
+
+    /**
+     * synchronized update
+     *
+     * @param mappedMethodName mappedMethodName
+     * @param attributes       attributes
+     */
+    void updateTransactionAttribute(String mappedMethodName, Map<Object, Object> attributes);
 }

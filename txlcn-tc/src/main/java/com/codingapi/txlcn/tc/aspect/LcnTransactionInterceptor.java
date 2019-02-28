@@ -27,7 +27,10 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.interceptor.TransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.transaction.jta.JtaTransactionManager;
+import org.springframework.util.StringUtils;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -84,6 +87,8 @@ public class LcnTransactionInterceptor extends TransactionInterceptor {
         // Outer Method Logic
         if (Objects.isNull(DTXLocalContext.cur())) {
             logger.debug("outer method start.");
+
+            // aspect info for log.
             com.codingapi.txlcn.tc.aspect.TransactionInfo transactionInfo = new com.codingapi.txlcn.tc.aspect.TransactionInfo();
             transactionInfo.setTargetClazz(invocation.getThis().getClass());
             transactionInfo.setArgumentValues(invocation.getArguments());
@@ -91,17 +96,39 @@ public class LcnTransactionInterceptor extends TransactionInterceptor {
             transactionInfo.setMethodStr(invocation.getMethod().toString());
             transactionInfo.setMethod(invocation.getMethod().getName());
 
+            // distributed transaction attribute.
             Invocation outerInvocation = new Invocation(invocation.getMethod(), invocation.getThis(), invocation.getArguments());
-            DTXLocalContext.getOrNew()
-                    .getInvocations()
-                    .add(outerInvocation);
             TransactionAttribute transactionAttribute = NonSpringRuntimeContext.instance().getTransactionAttribute(outerInvocation);
-            DTXLocalContext.cur().setTransactionInfo(transactionInfo);
+            DTXLocalContext.getOrNew().setTransactionInfo(transactionInfo);
             DTXLocalContext.cur().setTransactionType(transactionAttribute.getTransactionType());
             DTXLocalContext.cur().setUnitId(transactionAttribute.getUnitId());
+
+            // make proxy javax.sql.Connection flag if should
             if (isProxyConnection(transactionAttribute.getTransactionType())) {
                 DTXLocalContext.makeProxyConnection();
             }
+
+            // associate action for tcc's commit or rollback
+            String thisBeanName = StringUtils.uncapitalize(invocation.getThis().getClass().getSimpleName());
+            String thisMethodName = invocation.getMethod().getName();
+            Map<Object, Object> attrs = new HashMap<>(5);
+            if (LcnAnnotationTransactionAttributeSource.THIS_BEAN_NAME.equals(transactionAttribute.getCommitBeanName())) {
+                attrs.put(NonSpringRuntimeContext.TRANSACTION_COMMIT_BEAN, thisBeanName);
+            }
+            if (LcnAnnotationTransactionAttributeSource.THIS_BEAN_NAME.equals(transactionAttribute.getRollbackBeanName())) {
+                attrs.put(NonSpringRuntimeContext.TRANSACTION_ROLLBACK_BEAN, thisBeanName);
+            }
+            if (LcnAnnotationTransactionAttributeSource.ASSOCIATE_METHOD_NAME.equals(transactionAttribute.getCommitMethod())) {
+                attrs.put(NonSpringRuntimeContext.TRANSACTION_COMMIT_METHOD, "commit" + StringUtils.capitalize(thisMethodName));
+            }
+            if (LcnAnnotationTransactionAttributeSource.ASSOCIATE_METHOD_NAME.equals(transactionAttribute.getRollbackMethod())) {
+                attrs.put(NonSpringRuntimeContext.TRANSACTION_ROLLBACK_METHOD, "rollback" + StringUtils.capitalize(thisMethodName));
+            }
+            if (!attrs.isEmpty()) {
+                globalContext.updateTransactionAttribute(thisMethodName, attrs);
+            }
+
+            // set is outer method flag
             ret[0] = true;
         }
 

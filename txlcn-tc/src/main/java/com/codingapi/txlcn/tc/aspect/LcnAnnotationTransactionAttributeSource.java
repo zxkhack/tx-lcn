@@ -41,6 +41,10 @@ import java.util.stream.Stream;
  */
 public class LcnAnnotationTransactionAttributeSource extends AnnotationTransactionAttributeSource {
 
+    public static final String THIS_BEAN_NAME = "this";
+
+    public static final String ASSOCIATE_METHOD_NAME = "associate_method";
+
     @Override
     protected org.springframework.transaction.interceptor.TransactionAttribute determineTransactionAttribute(
             @NonNull AnnotatedElement element) {
@@ -74,6 +78,11 @@ public class LcnAnnotationTransactionAttributeSource extends AnnotationTransacti
             Assert.isTrue(Transactions.VALID_TRANSACTION_TYPES.contains(transactionType),
                     "non exists transaction type: " + transactionType);
 
+            // TCC Type must has commit and rollback action
+            if (Transactions.TCC.equals(transactionType)) {
+                commitBeanName = cancelBeanName = THIS_BEAN_NAME;
+                commitMethod = cancelMethod = ASSOCIATE_METHOD_NAME;
+            }
 
             // resolve commit or rollback execute context
             if (!transactionAttribute.commit().equals(TransactionAttribute.DO_BY_TYPE)) {

@@ -2,6 +2,7 @@ package com.codingapi.txlcn.tc.core.context;
 
 import com.codingapi.txlcn.common.util.Transactions;
 import com.codingapi.txlcn.tc.aspect.Invocation;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.PatternMatchUtils;
 
@@ -63,6 +64,19 @@ public class DefaultNonSpringRuntimeContext implements NonSpringRuntimeContext {
             return fromMap(attrs, unitId);
         }
         throw new IllegalStateException("");
+    }
+
+    @Override
+    public synchronized void updateTransactionAttribute(String mappedMethodName, Map<Object, Object> attributes) {
+        Assert.notNull(attributes, "attributes must not null");
+        Map<Object, Object> attrs = MAP.get(mappedMethodName);
+        Assert.notNull(attrs, "must not null when update");
+
+        for (Map.Entry<Object, Object> entry : attrs.entrySet()) {
+            if (attributes.containsKey(entry.getKey())) {
+                entry.setValue(attributes.get(entry.getKey()));
+            }
+        }
     }
 
     private boolean isMatch(String methodName, String mappedName) {

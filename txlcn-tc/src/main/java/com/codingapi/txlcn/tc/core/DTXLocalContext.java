@@ -16,14 +16,11 @@
 package com.codingapi.txlcn.tc.core;
 
 
-import com.codingapi.txlcn.tc.aspect.Invocation;
 import com.codingapi.txlcn.tc.aspect.TransactionInfo;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.transaction.Status;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -62,11 +59,6 @@ public class DTXLocalContext {
      * 事务信息
      */
     private TransactionInfo transactionInfo;
-
-    /**
-     * 业务线相关方法
-     */
-    private List<Invocation> invocations = new ArrayList<>(6);
 
     /**
      * 业务相关资源

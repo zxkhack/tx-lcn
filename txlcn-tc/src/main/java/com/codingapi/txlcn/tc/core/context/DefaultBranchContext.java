@@ -240,4 +240,9 @@ public class DefaultBranchContext implements BranchContext {
     public TransactionAttribute getTransactionAttribute(Invocation invocation) {
         return NonSpringRuntimeContext.instance().getTransactionAttribute(invocation);
     }
+
+    @Override
+    public void updateTransactionAttribute(String mappedMethodName, Map<Object, Object> attributes) {
+        NonSpringRuntimeContext.instance().updateTransactionAttribute(mappedMethodName, attributes);
+    }
 }
