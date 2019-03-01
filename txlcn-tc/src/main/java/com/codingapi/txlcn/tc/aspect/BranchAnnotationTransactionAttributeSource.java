@@ -77,6 +77,7 @@ public class BranchAnnotationTransactionAttributeSource extends AnnotationTransa
 
             transactionType = Objects.isNull(transactionAttribute) ? transactionType : transactionAttribute.type();
 
+            transactionType = Objects.isNull(transactionType) ? Transactions.LCN : transactionType;
 
             // check transaction type
             Assert.isTrue(Transactions.VALID_TRANSACTION_TYPES.contains(transactionType),
