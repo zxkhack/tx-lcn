@@ -16,12 +16,16 @@
 package com.codingapi.txlcn.tc.aspect;
 
 import com.codingapi.txlcn.common.util.Transactions;
+import com.codingapi.txlcn.tc.annotation.LcnTransaction;
+import com.codingapi.txlcn.tc.annotation.TccTransaction;
 import com.codingapi.txlcn.tc.annotation.TransactionAttribute;
+import com.codingapi.txlcn.tc.annotation.TxcTransaction;
 import com.codingapi.txlcn.tc.core.context.NonSpringRuntimeContext;
 import org.springframework.lang.NonNull;
 import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -60,13 +64,18 @@ public class BranchAnnotationTransactionAttributeSource extends AnnotationTransa
                 mappedMethodName = ((Method) element).getName();
             }
 
-            String transactionType = transactionAttribute == null ? Transactions.LCN : transactionAttribute.type();
+            // old version adapt todo del when next version
+            String[] attr = deprecatedAnnotationsSupport(element.getAnnotations());
+
+            String transactionType = attr[0];
 
             // nullable
-            String commitBeanName = null;
-            String cancelBeanName = null;
-            String commitMethod = null;
-            String cancelMethod = null;
+            String commitBeanName = attr[1];
+            String cancelBeanName = attr[2];
+            String commitMethod = attr[3];
+            String cancelMethod = attr[4];
+
+            transactionType = Objects.isNull(transactionAttribute) ? transactionType : transactionAttribute.type();
 
 
             // check transaction type
@@ -75,8 +84,15 @@ public class BranchAnnotationTransactionAttributeSource extends AnnotationTransa
 
             // TCC Type must has commit and rollback action
             if (Transactions.TCC.equals(transactionType)) {
-                commitBeanName = cancelBeanName = THIS_BEAN_NAME;
-                commitMethod = cancelMethod = ASSOCIATE_METHOD_NAME;
+
+                // old version test. todo del when next version
+                if (Objects.isNull(commitBeanName)) {
+                    commitBeanName = cancelBeanName = THIS_BEAN_NAME;
+                }
+                // todo del when next version
+                if (Objects.isNull(cancelMethod)) {
+                    commitMethod = cancelMethod = ASSOCIATE_METHOD_NAME;
+                }
             }
 
             // resolve commit or rollback execute context
@@ -106,5 +122,30 @@ public class BranchAnnotationTransactionAttributeSource extends AnnotationTransa
             NonSpringRuntimeContext.instance().cacheTransactionAttribute(mappedMethodName, attributes);
         }
         return attribute;
+    }
+
+
+    @Deprecated
+    private String[] deprecatedAnnotationsSupport(Annotation[] annotations) {
+        String[] attrs = new String[5];
+        for (Annotation annotation : annotations) {
+            if (annotation instanceof LcnTransaction) {
+                attrs[0] = Transactions.LCN;
+                break;
+            }
+            if (annotation instanceof TxcTransaction) {
+                attrs[0] = Transactions.TXC;
+                break;
+            }
+            if (annotation instanceof TccTransaction) {
+                attrs[0] = Transactions.TCC;
+                Class<?> executeClass = ((TccTransaction) annotation).executeClass();
+                attrs[1] = attrs[2] = StringUtils.uncapitalize(executeClass.getSimpleName());
+                attrs[3] = ((TccTransaction) annotation).confirmMethod();
+                attrs[4] = ((TccTransaction) annotation).cancelMethod();
+                break;
+            }
+        }
+        return attrs;
     }
 }
