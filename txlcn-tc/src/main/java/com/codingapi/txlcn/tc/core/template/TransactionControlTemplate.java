@@ -21,7 +21,7 @@ import com.codingapi.txlcn.logger.TxLogger;
 import com.codingapi.txlcn.tc.aspect.AspectInfo;
 import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.check.DTXChecking;
-import com.codingapi.txlcn.tc.core.check.DTXExceptionHandler;
+import com.codingapi.txlcn.tc.core.TransactionControlExceptionHandler;
 import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.corelog.aspect.AspectLogger;
 import com.codingapi.txlcn.tc.txmsg.ReliableMessenger;
@@ -46,7 +46,7 @@ public class TransactionControlTemplate {
 
     private final DTXChecking dtxChecking;
 
-    private final DTXExceptionHandler dtxExceptionHandler;
+    private final TransactionControlExceptionHandler transactionControlExceptionHandler;
 
     private final ReliableMessenger reliableMessenger;
 
@@ -54,11 +54,11 @@ public class TransactionControlTemplate {
 
     @Autowired
     public TransactionControlTemplate(AspectLogger aspectLogger, DTXChecking dtxChecking,
-                                      DTXExceptionHandler dtxExceptionHandler,
+                                      TransactionControlExceptionHandler transactionControlExceptionHandler,
                                       ReliableMessenger reliableMessenger, BranchContext globalContext) {
         this.aspectLogger = aspectLogger;
         this.dtxChecking = dtxChecking;
-        this.dtxExceptionHandler = dtxExceptionHandler;
+        this.transactionControlExceptionHandler = transactionControlExceptionHandler;
         this.reliableMessenger = reliableMessenger;
         this.globalContext = globalContext;
     }
@@ -85,10 +85,10 @@ public class TransactionControlTemplate {
             aspectLogger.trace(groupId, unitId, aspectInfo);
         } catch (RpcException e) {
             // 通讯异常
-            dtxExceptionHandler.handleCreateGroupMessageException(groupId, e);
+            transactionControlExceptionHandler.handleCreateGroupMessageException(groupId, e);
         } catch (LcnBusinessException e) {
             // 创建事务组业务失败
-            dtxExceptionHandler.handleCreateGroupBusinessException(groupId, e.getCause());
+            transactionControlExceptionHandler.handleCreateGroupBusinessException(groupId, e.getCause());
         }
         txLogger.txTrace(groupId, unitId, "create group over");
     }
@@ -118,9 +118,9 @@ public class TransactionControlTemplate {
             // 缓存参与方切面信息
             aspectLogger.trace(groupId, unitId, aspectInfo);
         } catch (RpcException e) {
-            dtxExceptionHandler.handleJoinGroupMessageException(Arrays.asList(groupId, unitId, transactionType), e);
+            transactionControlExceptionHandler.handleJoinGroupMessageException(Arrays.asList(groupId, unitId, transactionType), e);
         } catch (LcnBusinessException e) {
-            dtxExceptionHandler.handleJoinGroupBusinessException(Arrays.asList(groupId, unitId, transactionType), e);
+            transactionControlExceptionHandler.handleJoinGroupBusinessException(Arrays.asList(groupId, unitId, transactionType), e);
         }
         txLogger.txTrace(groupId, unitId, "join group logic over");
     }
@@ -142,10 +142,10 @@ public class TransactionControlTemplate {
                     groupId, unitId, "notify group > transaction type: {}, state: {}.", transactionType, state);
             return reliableMessenger.notifyGroup(groupId, state);
         } catch (RpcException e) {
-            dtxExceptionHandler.handleNotifyGroupMessageException(Arrays.asList(groupId, state, unitId, transactionType), e);
+            transactionControlExceptionHandler.handleNotifyGroupMessageException(Arrays.asList(groupId, state, unitId, transactionType), e);
         } catch (LcnBusinessException e) {
             // 关闭事务组失败
-            dtxExceptionHandler.handleNotifyGroupBusinessException(Arrays.asList(groupId, state, unitId, transactionType), e.getCause());
+            transactionControlExceptionHandler.handleNotifyGroupBusinessException(Arrays.asList(groupId, state, unitId, transactionType), e.getCause());
         }
         return state;
     }

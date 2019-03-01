@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingapi.txlcn.tc.core.check;
+package com.codingapi.txlcn.tc.core;
 
 import com.codingapi.txlcn.common.exception.*;
 import com.codingapi.txlcn.logger.TxLogger;
@@ -31,20 +31,20 @@ import java.util.List;
  * Date: 2018/12/20
  *
  * @author ujued
- * @see DTXExceptionHandler
+ * @see TransactionControlExceptionHandler
  */
 @Component
 @Slf4j
-public class DefaultDTXExceptionHandler implements DTXExceptionHandler {
+public class DefaultTransactionControlExceptionHandler implements TransactionControlExceptionHandler {
 
-    private static final TxLogger txLogger = TxLogger.newLogger(DefaultDTXExceptionHandler.class);
+    private static final TxLogger txLogger = TxLogger.newLogger(DefaultTransactionControlExceptionHandler.class);
 
     private final TransactionCleanupTemplate transactionCleanupTemplate;
 
     private final TMReporter tmReporter;
 
     @Autowired
-    public DefaultDTXExceptionHandler(TransactionCleanupTemplate transactionCleanupTemplate, TMReporter tmReporter) {
+    public DefaultTransactionControlExceptionHandler(TransactionCleanupTemplate transactionCleanupTemplate, TMReporter tmReporter) {
         this.transactionCleanupTemplate = transactionCleanupTemplate;
         this.tmReporter = tmReporter;
     }

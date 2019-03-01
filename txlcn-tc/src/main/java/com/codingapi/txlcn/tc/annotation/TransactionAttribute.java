@@ -4,6 +4,8 @@ import java.lang.annotation.*;
 
 /**
  * Description:
+ * Describe transaction attributes.
+ * Usually used in combination with {@link org.springframework.transaction.annotation.Transactional}
  * Date: 19-2-27 下午5:16
  *
  * @author ujued

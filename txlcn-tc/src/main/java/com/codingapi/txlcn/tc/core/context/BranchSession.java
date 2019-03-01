@@ -33,7 +33,7 @@ import java.util.Objects;
 @Slf4j
 public class BranchSession {
 
-    private final static ThreadLocal<BranchSession> currentLocal = new InheritableThreadLocal<>();
+    private final static ThreadLocal<BranchSession> localSession = new InheritableThreadLocal<>();
 
     /**
      * 事务类型
@@ -101,7 +101,7 @@ public class BranchSession {
      * @return 当前线程变量
      */
     public static BranchSession cur() {
-        return currentLocal.get();
+        return localSession.get();
     }
 
     /**
@@ -119,17 +119,17 @@ public class BranchSession {
      * @return 当前线程变量
      */
     public static BranchSession getOrOpen() {
-        if (currentLocal.get() == null) {
-            currentLocal.set(new BranchSession());
+        if (localSession.get() == null) {
+            localSession.set(new BranchSession());
         }
-        return currentLocal.get();
+        return localSession.get();
     }
 
     /**
      * 设置代理资源
      */
     public static void makeProxyConnection() {
-        if (currentLocal.get() != null) {
+        if (localSession.get() != null) {
             cur().proxyTmp = cur().proxyConnection;
             cur().proxyConnection = true;
         }
@@ -139,7 +139,7 @@ public class BranchSession {
      * 设置不代理资源
      */
     public static void makeUnProxyConnection() {
-        if (currentLocal.get() != null) {
+        if (localSession.get() != null) {
             cur().proxyTmp = cur().proxyConnection;
             cur().proxyConnection = false;
         }
@@ -149,7 +149,7 @@ public class BranchSession {
      * 撤销到上一步的资源代理状态
      */
     public static void undoProxyStatus() {
-        if (currentLocal.get() != null) {
+        if (localSession.get() != null) {
             cur().proxyConnection = cur().proxyTmp;
         }
     }
@@ -158,9 +158,9 @@ public class BranchSession {
      * 清理线程变量
      */
     public static void closeSession() {
-        if (currentLocal.get() != null) {
+        if (localSession.get() != null) {
             log.debug("clean thread local[{}]: {}", BranchSession.class.getSimpleName(), cur());
-            currentLocal.remove();
+            localSession.remove();
         }
     }
 
@@ -170,7 +170,7 @@ public class BranchSession {
      * @return 1 commit 0 rollback
      */
     public static int transactionState(int userDtxState) {
-        BranchSession branchSession = Objects.requireNonNull(currentLocal.get(), "DTX can't be null.");
+        BranchSession branchSession = Objects.requireNonNull(localSession.get(), "DTX can't be null.");
         return userDtxState == 1 ? branchSession.sysTransactionState : userDtxState;
     }
 }

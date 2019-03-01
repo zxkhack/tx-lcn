@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingapi.txlcn.tc.core.check;
+package com.codingapi.txlcn.tc.core;
 
 import com.codingapi.txlcn.common.exception.TransactionException;
 
@@ -23,7 +23,7 @@ import com.codingapi.txlcn.common.exception.TransactionException;
  *
  * @author ujued
  */
-public interface DTXExceptionHandler {
+public interface TransactionControlExceptionHandler {
 
 
     /**
