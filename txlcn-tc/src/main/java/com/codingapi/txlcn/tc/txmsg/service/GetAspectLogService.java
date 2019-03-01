@@ -19,7 +19,7 @@ import com.codingapi.txlcn.tc.corelog.aspect.AspectLog;
 import com.codingapi.txlcn.tc.corelog.aspect.AspectLogHelper;
 import com.codingapi.txlcn.tc.txmsg.RpcExecuteService;
 import com.codingapi.txlcn.tc.txmsg.TransactionCmd;
-import com.codingapi.txlcn.tc.aspect.TransactionInfo;
+import com.codingapi.txlcn.tc.aspect.AspectInfo;
 import com.codingapi.txlcn.common.exception.SerializerException;
 import com.codingapi.txlcn.common.exception.TxClientException;
 import com.codingapi.txlcn.common.util.serializer.SerializerContext;
@@ -55,8 +55,8 @@ public class GetAspectLogService implements RpcExecuteService {
                 throw new TxClientException("non exists aspect log.");
             }
 
-            TransactionInfo transactionInfo = SerializerContext.getInstance().deSerialize(txLog.getBytes(), TransactionInfo.class);
-            return transactionInfo.toJsonObject();
+            AspectInfo aspectInfo = SerializerContext.getInstance().deSerialize(txLog.getBytes(), AspectInfo.class);
+            return aspectInfo.toJsonObject();
         } catch (SerializerException e) {
             throw new TxClientException(e);
         }

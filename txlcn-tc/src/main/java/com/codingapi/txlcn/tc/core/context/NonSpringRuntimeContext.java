@@ -1,6 +1,6 @@
 package com.codingapi.txlcn.tc.core.context;
 
-import com.codingapi.txlcn.tc.aspect.Invocation;
+import com.codingapi.txlcn.tc.aspect.InvocationInfo;
 
 import java.util.Map;
 
@@ -30,7 +30,7 @@ public interface NonSpringRuntimeContext {
 
     TransactionAttribute getTransactionAttribute(String unitId);
 
-    TransactionAttribute getTransactionAttribute(Invocation invocation);
+    TransactionAttribute getTransactionAttribute(InvocationInfo invocationInfo);
 
     /**
      * synchronized update

@@ -17,7 +17,7 @@ package com.codingapi.txlcn.tc.core.mode.tcc;
 
 import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.common.util.Maps;
-import com.codingapi.txlcn.tc.core.DTXLocalContext;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.TransactionCleanService;
 import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.core.context.TransactionAttribute;
@@ -69,8 +69,8 @@ public class TccTransactionCleanService implements TransactionCleanService {
             if (shouldDestroy) {
                 TracingContext.init(Maps.of(TracingConstants.GROUP_ID, groupId, TracingConstants.APP_MAP, "{}"));
             }
-            DTXLocalContext.getOrNew().setGroupId(groupId);
-            DTXLocalContext.cur().setUnitId(unitId);
+            BranchSession.getOrOpen().setGroupId(groupId);
+            BranchSession.cur().setUnitId(unitId);
 
             Object bean = state == 1 ? beanHelper.loadBeanByName(transactionAttribute.getCommitBeanName()) :
                     beanHelper.loadBeanByName(transactionAttribute.getRollbackBeanName());

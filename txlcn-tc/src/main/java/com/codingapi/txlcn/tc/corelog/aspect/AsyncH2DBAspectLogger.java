@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.corelog.aspect;
 
-import com.codingapi.txlcn.tc.aspect.TransactionInfo;
+import com.codingapi.txlcn.tc.aspect.AspectInfo;
 import com.codingapi.txlcn.common.exception.SerializerException;
 import com.codingapi.txlcn.common.util.serializer.SerializerContext;
 import lombok.extern.slf4j.Slf4j;
@@ -58,12 +58,12 @@ public class AsyncH2DBAspectLogger implements AspectLogger {
     }
 
     @Override
-    public void trace(String groupId, String unitId, TransactionInfo transactionInfo) {
+    public void trace(String groupId, String unitId, AspectInfo aspectInfo) {
         executorService.submit(() -> {
             long t1 = System.currentTimeMillis();
             byte[] bytes;
             try {
-                bytes = SerializerContext.getInstance().serialize(transactionInfo);
+                bytes = SerializerContext.getInstance().serialize(aspectInfo);
             } catch (SerializerException e) {
                 e.printStackTrace();
                 return;
@@ -72,7 +72,7 @@ public class AsyncH2DBAspectLogger implements AspectLogger {
             txLog.setBytes(bytes);
             txLog.setGroupId(groupId);
             txLog.setUnitId(unitId);
-            txLog.setMethodStr(transactionInfo.getMethodStr());
+            txLog.setMethodStr(aspectInfo.getMethodStr());
             txLog.setTime(System.currentTimeMillis());
             txLog.setUnitIdHash(groupId.hashCode());
             txLog.setUnitIdHash(unitId.hashCode());

@@ -2,7 +2,7 @@ package com.codingapi.txlcn.tc.coprelog;
 
 import com.codingapi.txlcn.common.util.id.RandomUtils;
 import com.codingapi.txlcn.tc.MiniConfiguration;
-import com.codingapi.txlcn.tc.aspect.TransactionInfo;
+import com.codingapi.txlcn.tc.aspect.AspectInfo;
 import com.codingapi.txlcn.tc.corelog.aspect.AspectLogger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,13 +25,13 @@ public class AspectLogTest {
 
     @Test
     public void testTrace() throws InterruptedException {
-        TransactionInfo transactionInfo = new TransactionInfo();
-        transactionInfo.setMethod("method");
-        transactionInfo.setMethodStr("method str");
-        transactionInfo.setParameterTypes(new Class[]{String.class, Integer.class});
-        transactionInfo.setTargetClazz(String.class);
-        transactionInfo.setArgumentValues(new Object[]{"1", 2});
-        aspectLogger.trace(RandomUtils.randomKey(), RandomUtils.randomKey(), transactionInfo);
+        AspectInfo aspectInfo = new AspectInfo();
+        aspectInfo.setMethod("method");
+        aspectInfo.setMethodStr("method str");
+        aspectInfo.setParameterTypes(new Class[]{String.class, Integer.class});
+        aspectInfo.setTargetClazz(String.class);
+        aspectInfo.setArgumentValues(new Object[]{"1", 2});
+        aspectLogger.trace(RandomUtils.randomKey(), RandomUtils.randomKey(), aspectInfo);
         Thread.sleep(1000);
     }
 }

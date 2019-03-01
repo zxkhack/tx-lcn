@@ -39,11 +39,11 @@ import java.util.stream.Stream;
  *
  * @author ujued
  */
-public class LcnAnnotationTransactionAttributeSource extends AnnotationTransactionAttributeSource {
+public class BranchAnnotationTransactionAttributeSource extends AnnotationTransactionAttributeSource {
 
-    public static final String THIS_BEAN_NAME = "this";
+    static final String THIS_BEAN_NAME = "this";
 
-    public static final String ASSOCIATE_METHOD_NAME = "associate_method";
+    static final String ASSOCIATE_METHOD_NAME = "associate_method";
 
     @Override
     protected org.springframework.transaction.interceptor.TransactionAttribute determineTransactionAttribute(
@@ -51,21 +51,16 @@ public class LcnAnnotationTransactionAttributeSource extends AnnotationTransacti
         org.springframework.transaction.interceptor.TransactionAttribute attribute = super.determineTransactionAttribute(element);
         if (Objects.nonNull(attribute)) {
 
-            // check transaction propagation
-            Assert.isTrue(Transactions.VALID_PROPAGATION_NUMBERS.contains(attribute.getPropagationBehavior()),
-                    "invalid propagation. supports: " + Transactions.VALID_PROPAGATION);
-
             // TransactionAttribute annotation
             List<Annotation> attributesList = Stream.of(element.getAnnotations()).filter(annotation -> annotation instanceof TransactionAttribute).collect(Collectors.toList());
-            Assert.notEmpty(attributesList, "associate @TransactionAttribute to @Transactional please.");
-            TransactionAttribute transactionAttribute = (TransactionAttribute) attributesList.get(0);
+            TransactionAttribute transactionAttribute = attributesList.isEmpty() ? null : (TransactionAttribute) attributesList.get(0);
 
             String mappedMethodName = "*";
             if (element instanceof Method) {
                 mappedMethodName = ((Method) element).getName();
             }
 
-            String transactionType = transactionAttribute.type();
+            String transactionType = transactionAttribute == null ? Transactions.LCN : transactionAttribute.type();
 
             // nullable
             String commitBeanName = null;
@@ -85,20 +80,23 @@ public class LcnAnnotationTransactionAttributeSource extends AnnotationTransacti
             }
 
             // resolve commit or rollback execute context
-            if (!transactionAttribute.commit().equals(TransactionAttribute.DO_BY_TYPE)) {
-                String[] beanAndMethod = transactionAttribute.commit().split("#");
-                Assert.isTrue(beanAndMethod.length == 2,
-                        "@TransactionAttribute. commit action format error. usage: beanName#methodName");
-                commitBeanName = beanAndMethod[0];
-                commitMethod = beanAndMethod[1];
+            if (transactionAttribute != null) {
+                if (!transactionAttribute.commit().equals(TransactionAttribute.DO_BY_TYPE)) {
+                    String[] beanAndMethod = transactionAttribute.commit().split("#");
+                    Assert.isTrue(beanAndMethod.length == 2,
+                            "@TransactionAttribute. commit action format error. usage: beanName#methodName");
+                    commitBeanName = beanAndMethod[0];
+                    commitMethod = beanAndMethod[1];
+                }
+                if (!transactionAttribute.rollback().equals(TransactionAttribute.DO_BY_TYPE)) {
+                    String[] beanAndMethod = transactionAttribute.rollback().split("#");
+                    Assert.isTrue(beanAndMethod.length == 2,
+                            "@TransactionAttribute. rollback action format error. usage: beanName#methodName");
+                    cancelBeanName = beanAndMethod[0];
+                    cancelMethod = beanAndMethod[1];
+                }
             }
-            if (!transactionAttribute.rollback().equals(TransactionAttribute.DO_BY_TYPE)) {
-                String[] beanAndMethod = transactionAttribute.rollback().split("#");
-                Assert.isTrue(beanAndMethod.length == 2,
-                        "@TransactionAttribute. rollback action format error. usage: beanName#methodName");
-                cancelBeanName = beanAndMethod[0];
-                cancelMethod = beanAndMethod[1];
-            }
+
             Map<Object, Object> attributes = new HashMap<>();
             attributes.put(NonSpringRuntimeContext.TRANSACTION_TYPE, transactionType);
             attributes.put(NonSpringRuntimeContext.TRANSACTION_COMMIT_BEAN, commitBeanName);

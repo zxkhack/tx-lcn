@@ -15,15 +15,14 @@
  */
 package com.codingapi.txlcn.tc.aspect;
 
-import com.codingapi.txlcn.tc.core.DTXLocalContext;
-import com.codingapi.txlcn.tc.support.TxLcnBeanHelper;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.TransactionResourceProxy;
+import com.codingapi.txlcn.tc.support.TxLcnBeanHelper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.util.Objects;
 
 /**
  * Description:
@@ -34,18 +33,17 @@ import java.util.Objects;
  */
 @Component
 @Slf4j
-public class DTXResourceWeaver {
+public class BranchResourceWeaver {
 
     private final TxLcnBeanHelper txLcnBeanHelper;
 
-    public DTXResourceWeaver(TxLcnBeanHelper txLcnBeanHelper) {
+    public BranchResourceWeaver(TxLcnBeanHelper txLcnBeanHelper) {
         this.txLcnBeanHelper = txLcnBeanHelper;
     }
 
     public Object getConnection(DataSource dataSource) throws Throwable {
-        DTXLocalContext dtxLocalContext = DTXLocalContext.cur();
-        if (Objects.nonNull(dtxLocalContext) && dtxLocalContext.isProxy()) {
-            String transactionType = dtxLocalContext.getTransactionType();
+        if (BranchSession.isOpen() && BranchSession.cur().isProxyConnection()) {
+            String transactionType = BranchSession.cur().getTransactionType();
             TransactionResourceProxy resourceProxy = txLcnBeanHelper.loadTransactionResourceProxy(transactionType);
             Connection connection = resourceProxy.proxyConnection(dataSource);
             log.debug("proxy a sql connection: {}.", connection);

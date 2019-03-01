@@ -16,6 +16,7 @@
 package com.codingapi.txlcn.tc.core;
 
 import com.codingapi.txlcn.common.exception.TransactionClearException;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.template.TransactionCleanupTemplate;
 import com.codingapi.txlcn.tc.support.DTXUserControls;
 import lombok.extern.slf4j.Slf4j;
@@ -43,13 +44,13 @@ public class BranchTransaction implements UserTransaction, Referenceable, Serial
     private final TransactionCleanupTemplate transactionCleanupTemplate;
 
     private boolean isOriginalBranch() {
-        return DTXLocalContext.cur().isOriginalBranch();
+        return BranchSession.cur().isOriginalBranch();
     }
 
     private void firstPhaseCleanup(int state) throws SystemException {
-        String groupId = DTXLocalContext.cur().getGroupId();
-        String unitId = DTXLocalContext.cur().getUnitId();
-        String transactionType = DTXLocalContext.cur().getTransactionType();
+        String groupId = BranchSession.cur().getGroupId();
+        String unitId = BranchSession.cur().getUnitId();
+        String transactionType = BranchSession.cur().getTransactionType();
         try {
             transactionCleanupTemplate.firstPhase(groupId, unitId, transactionType, state);
         } catch (TransactionClearException e) {
@@ -68,12 +69,12 @@ public class BranchTransaction implements UserTransaction, Referenceable, Serial
         if (isOriginalBranch()) {
             transactionManager.begin();
         }
-        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ACTIVE);
+        BranchSession.cur().setSysTransactionState(Status.STATUS_ACTIVE);
     }
 
     public void commit() throws SecurityException, IllegalStateException, HeuristicRollbackException,
             RollbackException, HeuristicMixedException, SystemException {
-        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_COMMITTING);
+        BranchSession.cur().setSysTransactionState(Status.STATUS_COMMITTING);
         firstPhaseCleanup(1);
         if (isOriginalBranch()) {
             transactionManager.commit();
@@ -82,7 +83,7 @@ public class BranchTransaction implements UserTransaction, Referenceable, Serial
 
 
     public void rollback() throws IllegalStateException, SecurityException, SystemException {
-        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ROLLING_BACK);
+        BranchSession.cur().setSysTransactionState(Status.STATUS_ROLLING_BACK);
         firstPhaseCleanup(0);
         if (isOriginalBranch()) {
             transactionManager.rollback();
@@ -95,8 +96,10 @@ public class BranchTransaction implements UserTransaction, Referenceable, Serial
     }
 
     public int getStatus() throws SystemException {
-        int status = DTXLocalContext.cur().getSysTransactionState();
+        log.debug("Get status from thread.");
+        int status = BranchSession.cur().getSysTransactionState();
         if (status == Status.STATUS_UNKNOWN) {
+            log.debug("Get status from TM");
             status = transactionManager.getStatus();
             if (status == Status.STATUS_UNKNOWN) {
                 status = Status.STATUS_NO_TRANSACTION;

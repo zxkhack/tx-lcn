@@ -21,7 +21,7 @@ import com.codingapi.txlcn.tc.config.TxClientConfig;
 import com.codingapi.txlcn.tc.core.mode.lcn.LcnConnectionProxy;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.PrimaryKeysProvider;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.TableStruct;
-import com.codingapi.txlcn.tc.aspect.Invocation;
+import com.codingapi.txlcn.tc.aspect.InvocationInfo;
 import com.codingapi.txlcn.tracing.TracingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -237,8 +237,8 @@ public class DefaultBranchContext implements BranchContext {
     }
 
     @Override
-    public TransactionAttribute getTransactionAttribute(Invocation invocation) {
-        return NonSpringRuntimeContext.instance().getTransactionAttribute(invocation);
+    public TransactionAttribute getTransactionAttribute(InvocationInfo invocationInfo) {
+        return NonSpringRuntimeContext.instance().getTransactionAttribute(invocationInfo);
     }
 
     @Override

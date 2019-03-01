@@ -20,7 +20,7 @@ import com.codingapi.txlcn.common.exception.TxcLogicException;
 import com.codingapi.txlcn.common.lock.DTXLocks;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.*;
 import com.codingapi.txlcn.txmsg.exception.RpcException;
-import com.codingapi.txlcn.tc.core.DTXLocalContext;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.TxcService;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.TxcSqlExecutor;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.undo.TableRecord;
@@ -152,8 +152,8 @@ public class TxcServiceImpl implements TxcService {
             return;
         }
 
-        String groupId = DTXLocalContext.cur().getGroupId();
-        String unitId = DTXLocalContext.cur().getUnitId();
+        String groupId = BranchSession.cur().getGroupId();
+        String unitId = BranchSession.cur().getUnitId();
 
         // lock
         lockDataLine(groupId, unitId, lockIdSet, true);
@@ -164,7 +164,7 @@ public class TxcServiceImpl implements TxcService {
 
     @Override
     public void lockSelect(SelectImageParams selectImageParams, boolean isxLock) throws TxcLogicException {
-        Connection connection = (Connection) DTXLocalContext.cur().getResource();
+        Connection connection = (Connection) BranchSession.cur().getResource();
         try {
             List<ModifiedRecord> modifiedRecords = txcSqlExecutor.selectSqlPreviousPrimaryKeys(connection, selectImageParams);
             Set<String> lockIdSet = new HashSet<>();
@@ -175,7 +175,7 @@ public class TxcServiceImpl implements TxcService {
                     lockIdSet.add(hex(v.getPrimaryKeys().toString()));
                 }
             }
-            lockDataLine(DTXLocalContext.cur().getGroupId(), DTXLocalContext.cur().getUnitId(), lockIdSet, isxLock);
+            lockDataLine(BranchSession.cur().getGroupId(), BranchSession.cur().getUnitId(), lockIdSet, isxLock);
         } catch (SQLException e) {
             throw new TxcLogicException(e);
         }
@@ -185,7 +185,7 @@ public class TxcServiceImpl implements TxcService {
     public void resolveUpdateImage(UpdateImageParams updateImageParams) throws TxcLogicException {
         // 前置镜像数据集
         List<ModifiedRecord> modifiedRecords;
-        Connection connection = (Connection) DTXLocalContext.cur().getResource();
+        Connection connection = (Connection) BranchSession.cur().getResource();
         try {
             modifiedRecords = txcSqlExecutor.updateSqlPreviousData(connection, updateImageParams);
         } catch (SQLException e) {
@@ -199,7 +199,7 @@ public class TxcServiceImpl implements TxcService {
     public void resolveDeleteImage(DeleteImageParams deleteImageParams) throws TxcLogicException {
         // 前置数据
         List<ModifiedRecord> modifiedRecords;
-        Connection connection = (Connection) DTXLocalContext.cur().getResource();
+        Connection connection = (Connection) BranchSession.cur().getResource();
         try {
             modifiedRecords = txcSqlExecutor.deleteSqlPreviousData(connection, deleteImageParams);
         } catch (SQLException e) {
@@ -248,7 +248,7 @@ public class TxcServiceImpl implements TxcService {
         // save to db
         TableRecordList tableRecords = new TableRecordList();
         tableRecords.getTableRecords().add(new TableRecord(insertImageParams.getTableName(), fieldCluster));
-        saveUndoLog(DTXLocalContext.cur().getGroupId(), DTXLocalContext.cur().getUnitId(), SqlUtils.SQL_TYPE_INSERT, tableRecords);
+        saveUndoLog(BranchSession.cur().getGroupId(), BranchSession.cur().getUnitId(), SqlUtils.SQL_TYPE_INSERT, tableRecords);
     }
 
     @Override
@@ -272,7 +272,7 @@ public class TxcServiceImpl implements TxcService {
 
     @Override
     public void undo(String groupId, String unitId) throws TxcLogicException {
-        DTXLocalContext.makeUnProxyConnection();
+        BranchSession.makeUnProxyConnection();
         List<StatementInfo> statementInfoList = new ArrayList<>();
         try {
             List<UndoLogDO> undoLogDOList = txcLogHelper.getUndoLogByGroupAndUnitId(groupId, unitId);
@@ -299,7 +299,7 @@ public class TxcServiceImpl implements TxcService {
             exception.setAttachment(statementInfoList);
             throw exception;
         } finally {
-            DTXLocalContext.undoProxyStatus();
+            BranchSession.undoProxyStatus();
         }
     }
 }

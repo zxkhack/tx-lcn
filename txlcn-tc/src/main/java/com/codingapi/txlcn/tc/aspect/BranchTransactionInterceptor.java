@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.aspect;
 
-import com.codingapi.txlcn.tc.core.DTXLocalContext;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.context.NonSpringRuntimeContext;
 import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.core.context.TransactionAttribute;
@@ -23,6 +23,7 @@ import com.codingapi.txlcn.tracing.TracingContext;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.interceptor.TransactionAttributeSource;
 import org.springframework.transaction.interceptor.TransactionInterceptor;
@@ -40,17 +41,17 @@ import java.util.Properties;
  *
  * @author ujued
  */
-public class LcnTransactionInterceptor extends TransactionInterceptor {
+public class BranchTransactionInterceptor extends TransactionInterceptor {
 
-    private final BranchContext globalContext;
+    private final BranchContext branchContext;
 
-    public LcnTransactionInterceptor(BranchContext globalContext) {
-        this.globalContext = globalContext;
+    public BranchTransactionInterceptor(BranchContext branchContext) {
+        this.branchContext = branchContext;
     }
 
     @Override
     public void setTransactionAttributes(@NonNull Properties transactionAttributes) {
-        LcnNameMatchTransactionAttributeSource tas = new LcnNameMatchTransactionAttributeSource();
+        BranchNameMatchTransactionAttributeSource tas = new BranchNameMatchTransactionAttributeSource();
         tas.setProperties(transactionAttributes);
         super.setTransactionAttributeSource(tas);
     }
@@ -68,7 +69,7 @@ public class LcnTransactionInterceptor extends TransactionInterceptor {
         }
 
         // do associate logic when JtaTransactionManager
-        boolean[] ret = associateTransactionAttributes(invocation);
+        boolean[] ret = associateTransactionAttributes(invocation, targetClass);
         try {
             return super.invoke(invocation);
         } finally {
@@ -78,54 +79,59 @@ public class LcnTransactionInterceptor extends TransactionInterceptor {
     }
 
     private boolean isProxyConnection(String transactionType) {
-        return globalContext.isProxyConnection(transactionType);
+        return branchContext.isProxyConnection(transactionType);
     }
 
-    private boolean[] associateTransactionAttributes(MethodInvocation invocation) {
+    private boolean[] associateTransactionAttributes(MethodInvocation invocation, @Nullable Class<?> targetClass) {
         boolean[] ret = new boolean[2];
 
         // Outer Method Logic
-        if (Objects.isNull(DTXLocalContext.cur())) {
+        if (Objects.isNull(BranchSession.cur())) {
             logger.debug("outer method start.");
 
             // aspect info for log.
-            com.codingapi.txlcn.tc.aspect.TransactionInfo transactionInfo = new com.codingapi.txlcn.tc.aspect.TransactionInfo();
-            transactionInfo.setTargetClazz(invocation.getThis().getClass());
-            transactionInfo.setArgumentValues(invocation.getArguments());
-            transactionInfo.setTarget(invocation.getThis());
-            transactionInfo.setMethodStr(invocation.getMethod().toString());
-            transactionInfo.setMethod(invocation.getMethod().getName());
+            AspectInfo aspectInfo = new AspectInfo();
+            aspectInfo.setTargetClazz(invocation.getThis().getClass());
+            aspectInfo.setArgumentValues(invocation.getArguments());
+            aspectInfo.setTarget(invocation.getThis());
+            aspectInfo.setMethodStr(invocation.getMethod().toString());
+            aspectInfo.setMethod(invocation.getMethod().getName());
 
             // distributed transaction attribute.
-            Invocation outerInvocation = new Invocation(invocation.getMethod(), invocation.getThis(), invocation.getArguments());
+            InvocationInfo outerInvocation = new InvocationInfo();
+            outerInvocation.setMethod(invocation.getMethod());
+            outerInvocation.setArgs(invocation.getArguments());
+            outerInvocation.setTarget(invocation.getThis());
+            outerInvocation.setTargetClass(targetClass);
+
             TransactionAttribute transactionAttribute = NonSpringRuntimeContext.instance().getTransactionAttribute(outerInvocation);
-            DTXLocalContext.getOrNew().setTransactionInfo(transactionInfo);
-            DTXLocalContext.cur().setTransactionType(transactionAttribute.getTransactionType());
-            DTXLocalContext.cur().setUnitId(transactionAttribute.getUnitId());
+            BranchSession.getOrOpen().setAspectInfo(aspectInfo);
+            BranchSession.cur().setTransactionType(transactionAttribute.getTransactionType());
+            BranchSession.cur().setUnitId(transactionAttribute.getUnitId());
 
             // make proxy javax.sql.Connection flag if should
             if (isProxyConnection(transactionAttribute.getTransactionType())) {
-                DTXLocalContext.makeProxyConnection();
+                BranchSession.makeProxyConnection();
             }
 
             // associate action for tcc's commit or rollback
-            String thisBeanName = StringUtils.uncapitalize(invocation.getThis().getClass().getSimpleName());
+            String thisBeanName = targetClass == null ? null : StringUtils.uncapitalize(targetClass.getSimpleName());
             String thisMethodName = invocation.getMethod().getName();
             Map<Object, Object> attrs = new HashMap<>(5);
-            if (LcnAnnotationTransactionAttributeSource.THIS_BEAN_NAME.equals(transactionAttribute.getCommitBeanName())) {
+            if (BranchAnnotationTransactionAttributeSource.THIS_BEAN_NAME.equals(transactionAttribute.getCommitBeanName())) {
                 attrs.put(NonSpringRuntimeContext.TRANSACTION_COMMIT_BEAN, thisBeanName);
             }
-            if (LcnAnnotationTransactionAttributeSource.THIS_BEAN_NAME.equals(transactionAttribute.getRollbackBeanName())) {
+            if (BranchAnnotationTransactionAttributeSource.THIS_BEAN_NAME.equals(transactionAttribute.getRollbackBeanName())) {
                 attrs.put(NonSpringRuntimeContext.TRANSACTION_ROLLBACK_BEAN, thisBeanName);
             }
-            if (LcnAnnotationTransactionAttributeSource.ASSOCIATE_METHOD_NAME.equals(transactionAttribute.getCommitMethod())) {
+            if (BranchAnnotationTransactionAttributeSource.ASSOCIATE_METHOD_NAME.equals(transactionAttribute.getCommitMethod())) {
                 attrs.put(NonSpringRuntimeContext.TRANSACTION_COMMIT_METHOD, "commit" + StringUtils.capitalize(thisMethodName));
             }
-            if (LcnAnnotationTransactionAttributeSource.ASSOCIATE_METHOD_NAME.equals(transactionAttribute.getRollbackMethod())) {
+            if (BranchAnnotationTransactionAttributeSource.ASSOCIATE_METHOD_NAME.equals(transactionAttribute.getRollbackMethod())) {
                 attrs.put(NonSpringRuntimeContext.TRANSACTION_ROLLBACK_METHOD, "rollback" + StringUtils.capitalize(thisMethodName));
             }
             if (!attrs.isEmpty()) {
-                globalContext.updateTransactionAttribute(thisMethodName, attrs);
+                branchContext.updateTransactionAttribute(thisMethodName, attrs);
             }
 
             // set is outer method flag
@@ -135,12 +141,12 @@ public class LcnTransactionInterceptor extends TransactionInterceptor {
         // OriginalBranch Logic
         if (!TracingContext.tracing().hasGroup()) {
             TracingContext.tracing().beginTransactionGroup();
-            globalContext.startTx(true, TracingContext.tracing().groupId());
-            DTXLocalContext.cur().setOriginalBranch(true);
+            branchContext.startTx(true, TracingContext.tracing().groupId());
+            BranchSession.cur().setOriginalBranch(true);
             ret[1] = true;
         }
 
-        DTXLocalContext.cur().setGroupId(TracingContext.tracing().groupId());
+        BranchSession.cur().setGroupId(TracingContext.tracing().groupId());
 
         return ret;
     }
@@ -149,13 +155,13 @@ public class LcnTransactionInterceptor extends TransactionInterceptor {
 
         // OriginalBranch Logic
         if (isOriginalBranch) {
-            globalContext.destroyTx();
+            branchContext.destroyTx();
         }
 
         // Outer Method Logic
         if (isOuter) {
             logger.debug("outer method stop.");
-            DTXLocalContext.makeNeverAppeared();
+            BranchSession.closeSession();
         }
     }
 }

@@ -29,6 +29,8 @@ public @interface TransactionAttribute {
 
     /**
      * second phase commit action.
+     * as: beanName#methodName(non arg).
+     * only can used in transaction type {@code tcc}
      *
      * @return action
      */
@@ -36,6 +38,8 @@ public @interface TransactionAttribute {
 
     /**
      * second phase rollback action.
+     * as: beanName#methodName(non arg).
+     * only can used in transaction type {@code tcc}
      *
      * @return action
      */

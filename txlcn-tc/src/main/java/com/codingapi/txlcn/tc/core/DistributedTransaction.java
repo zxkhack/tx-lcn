@@ -17,7 +17,8 @@ package com.codingapi.txlcn.tc.core;
 
 import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.common.exception.TransactionException;
-import com.codingapi.txlcn.tc.aspect.TransactionInfo;
+import com.codingapi.txlcn.tc.aspect.AspectInfo;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.template.TransactionCleanupTemplate;
 import com.codingapi.txlcn.tc.core.template.TransactionControlTemplate;
 import lombok.extern.slf4j.Slf4j;
@@ -45,9 +46,9 @@ public class DistributedTransaction implements Transaction {
     }
 
     private void allBranchesCleanup(int s) throws SystemException {
-        String groupId = DTXLocalContext.cur().getGroupId();
-        String unitId = DTXLocalContext.cur().getUnitId();
-        String transactionType = DTXLocalContext.cur().getTransactionType();
+        String groupId = BranchSession.cur().getGroupId();
+        String unitId = BranchSession.cur().getUnitId();
+        String transactionType = BranchSession.cur().getTransactionType();
         int state = transactionControlTemplate.notifyGroup(groupId, unitId, transactionType, s);
         try {
             transactionCleanupTemplate.secondPhase(groupId, unitId, transactionType, state);
@@ -59,9 +60,9 @@ public class DistributedTransaction implements Transaction {
     @Override
     public void commit() throws SecurityException, IllegalStateException, SystemException {
         log.info("original branch transaction send tx message to TM");
-        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_PREPARED);
+        BranchSession.cur().setSysTransactionState(Status.STATUS_PREPARED);
         allBranchesCleanup(1);
-        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_COMMITTED);
+        BranchSession.cur().setSysTransactionState(Status.STATUS_COMMITTED);
     }
 
     @Override
@@ -82,22 +83,22 @@ public class DistributedTransaction implements Transaction {
     @Override
     public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException, SystemException {
         try {
-            DTXLocalContext.cur().setSysTransactionState(Status.STATUS_COMMITTING);
-            String groupId = DTXLocalContext.cur().getGroupId();
-            String unitId = DTXLocalContext.cur().getUnitId();
-            String transactionType = DTXLocalContext.cur().getTransactionType();
-            TransactionInfo transactionInfo = DTXLocalContext.cur().getTransactionInfo();
-            transactionControlTemplate.joinGroup(groupId, unitId, transactionType, transactionInfo);
+            BranchSession.cur().setSysTransactionState(Status.STATUS_COMMITTING);
+            String groupId = BranchSession.cur().getGroupId();
+            String unitId = BranchSession.cur().getUnitId();
+            String transactionType = BranchSession.cur().getTransactionType();
+            AspectInfo aspectInfo = BranchSession.cur().getAspectInfo();
+            transactionControlTemplate.joinGroup(groupId, unitId, transactionType, aspectInfo);
         } catch (TransactionException e) {
-            throw new RollbackException(e.getMessage());
+            throw new SystemException(e.getMessage());
         }
     }
 
     @Override
     public void rollback() throws IllegalStateException, SystemException {
-        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ROLLING_BACK);
+        BranchSession.cur().setSysTransactionState(Status.STATUS_ROLLING_BACK);
         allBranchesCleanup(0);
-        DTXLocalContext.cur().setSysTransactionState(Status.STATUS_ROLLEDBACK);
+        BranchSession.cur().setSysTransactionState(Status.STATUS_ROLLEDBACK);
     }
 
     @Override

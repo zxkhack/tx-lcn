@@ -15,7 +15,6 @@
  */
 package com.codingapi.txlcn.common.util;
 
-import org.springframework.transaction.TransactionDefinition;
 import org.springframework.util.DigestUtils;
 
 import java.util.Arrays;
@@ -63,11 +62,6 @@ public class Transactions {
 
 
     public static final List<String> VALID_TRANSACTION_TYPES = Arrays.asList(TCC, LCN, TXC, XA);
-
-    public static final List<String> VALID_PROPAGATION = Arrays.asList("required", "supports");
-
-    public static final List<Integer> VALID_PROPAGATION_NUMBERS =
-            Arrays.asList(TransactionDefinition.PROPAGATION_REQUIRED, TransactionDefinition.PROPAGATION_SUPPORTS);
 
     /////////// 工具方法  ////////////////////////////////////////////
 

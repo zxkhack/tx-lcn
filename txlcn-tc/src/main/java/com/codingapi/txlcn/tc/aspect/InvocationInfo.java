@@ -15,10 +15,11 @@
  */
 package com.codingapi.txlcn.tc.aspect;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 /**
  * Description:
@@ -27,9 +28,19 @@ import java.lang.reflect.Method;
  * @author ujued
  */
 @Data
-@AllArgsConstructor
-public class Invocation {
+@NoArgsConstructor
+public class InvocationInfo {
     private Method method;
     private Object target;
     private Object[] args;
+    private Class<?> targetClass;
+    private volatile String methodId;
+
+    public String methodId() {
+        if (Objects.nonNull(methodId)) {
+            return methodId;
+        }
+        this.methodId = targetClass == null ? "class" : targetClass.getName() + '#' + method.getName() + args.length;
+        return methodId;
+    }
 }

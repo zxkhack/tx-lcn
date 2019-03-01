@@ -19,13 +19,14 @@ import com.codingapi.txlcn.common.util.Maps;
 import com.codingapi.txlcn.common.util.Transactions;
 import com.codingapi.txlcn.tc.core.context.NonSpringRuntimeContext;
 import org.springframework.transaction.interceptor.NameMatchTransactionAttributeSource;
-import org.springframework.transaction.interceptor.RuleBasedTransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionAttribute;
 import org.springframework.transaction.interceptor.TransactionAttributeEditor;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
  *
  * @author ujued
  */
-public class LcnNameMatchTransactionAttributeSource extends NameMatchTransactionAttributeSource {
+public class BranchNameMatchTransactionAttributeSource extends NameMatchTransactionAttributeSource {
 
     @Override
     public void setProperties(Properties transactionAttributes) {
@@ -52,27 +53,23 @@ public class LcnNameMatchTransactionAttributeSource extends NameMatchTransaction
     private String handleLcnTransactionAttributes(String methodName, String value) {
         String[] tokens = StringUtils.commaDelimitedListToStringArray(value);
         return Arrays.stream(tokens).filter(token -> {
+            boolean giveSpring = true;
             // resolve dtx metadata
+
+            // transaction type. default is lcn
+            String type = Transactions.LCN;
             if (token.startsWith("DTX_")) {
                 token = token.substring(4);
-                String type = Transactions.LCN;
                 if (token.startsWith("TYPE_")) {
                     type = token.substring(5).toLowerCase();
                     Assert.isTrue(Transactions.VALID_TRANSACTION_TYPES.contains(type),
                             "non exists transaction type: " + type);
                 }
-                NonSpringRuntimeContext.instance().cacheTransactionAttribute(
-                        methodName, Maps.newHashMap(NonSpringRuntimeContext.TRANSACTION_TYPE, type));
-                return false;
+                giveSpring = false;
             }
-
-            // check transaction propagation
-            if (token.startsWith(RuleBasedTransactionAttribute.PREFIX_PROPAGATION)) {
-                String propagation = token.substring(RuleBasedTransactionAttribute.PREFIX_PROPAGATION.length()).toLowerCase();
-                Assert.isTrue(Transactions.VALID_PROPAGATION.contains(propagation),
-                        "invalid propagation. supports: " + Transactions.VALID_PROPAGATION);
-            }
-            return true;
+            NonSpringRuntimeContext.instance().cacheTransactionAttribute(
+                    methodName, Maps.newHashMap(NonSpringRuntimeContext.TRANSACTION_TYPE, type));
+            return giveSpring;
         }).collect(Collectors.joining(","));
     }
 }

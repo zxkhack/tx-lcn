@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingapi.txlcn.tc.core;
+package com.codingapi.txlcn.tc.core.context;
 
 
-import com.codingapi.txlcn.tc.aspect.TransactionInfo;
+import com.codingapi.txlcn.tc.aspect.AspectInfo;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,9 +31,9 @@ import java.util.Objects;
  */
 @Data
 @Slf4j
-public class DTXLocalContext {
+public class BranchSession {
 
-    private final static ThreadLocal<DTXLocalContext> currentLocal = new InheritableThreadLocal<>();
+    private final static ThreadLocal<BranchSession> currentLocal = new InheritableThreadLocal<>();
 
     /**
      * 事务类型
@@ -58,7 +58,7 @@ public class DTXLocalContext {
     /**
      * 事务信息
      */
-    private TransactionInfo transactionInfo;
+    private AspectInfo aspectInfo;
 
     /**
      * 业务相关资源
@@ -76,7 +76,7 @@ public class DTXLocalContext {
     /**
      * 是否代理资源
      */
-    private boolean proxy;
+    private boolean proxyConnection;
 
     //////// private     ///////////////////////
     /**
@@ -100,8 +100,17 @@ public class DTXLocalContext {
      *
      * @return 当前线程变量
      */
-    public static DTXLocalContext cur() {
+    public static BranchSession cur() {
         return currentLocal.get();
+    }
+
+    /**
+     * 当前线程是否存在分支事务会话
+     *
+     * @return result
+     */
+    public static boolean isOpen() {
+        return Objects.nonNull(cur());
     }
 
     /**
@@ -109,9 +118,9 @@ public class DTXLocalContext {
      *
      * @return 当前线程变量
      */
-    public static DTXLocalContext getOrNew() {
+    public static BranchSession getOrOpen() {
         if (currentLocal.get() == null) {
-            currentLocal.set(new DTXLocalContext());
+            currentLocal.set(new BranchSession());
         }
         return currentLocal.get();
     }
@@ -121,8 +130,8 @@ public class DTXLocalContext {
      */
     public static void makeProxyConnection() {
         if (currentLocal.get() != null) {
-            cur().proxyTmp = cur().proxy;
-            cur().proxy = true;
+            cur().proxyTmp = cur().proxyConnection;
+            cur().proxyConnection = true;
         }
     }
 
@@ -131,8 +140,8 @@ public class DTXLocalContext {
      */
     public static void makeUnProxyConnection() {
         if (currentLocal.get() != null) {
-            cur().proxyTmp = cur().proxy;
-            cur().proxy = false;
+            cur().proxyTmp = cur().proxyConnection;
+            cur().proxyConnection = false;
         }
     }
 
@@ -141,16 +150,16 @@ public class DTXLocalContext {
      */
     public static void undoProxyStatus() {
         if (currentLocal.get() != null) {
-            cur().proxy = cur().proxyTmp;
+            cur().proxyConnection = cur().proxyTmp;
         }
     }
 
     /**
      * 清理线程变量
      */
-    public static void makeNeverAppeared() {
+    public static void closeSession() {
         if (currentLocal.get() != null) {
-            log.debug("clean thread local[{}]: {}", DTXLocalContext.class.getSimpleName(), cur());
+            log.debug("clean thread local[{}]: {}", BranchSession.class.getSimpleName(), cur());
             currentLocal.remove();
         }
     }
@@ -161,7 +170,7 @@ public class DTXLocalContext {
      * @return 1 commit 0 rollback
      */
     public static int transactionState(int userDtxState) {
-        DTXLocalContext dtxLocalContext = Objects.requireNonNull(currentLocal.get(), "DTX can't be null.");
-        return userDtxState == 1 ? dtxLocalContext.sysTransactionState : userDtxState;
+        BranchSession branchSession = Objects.requireNonNull(currentLocal.get(), "DTX can't be null.");
+        return userDtxState == 1 ? branchSession.sysTransactionState : userDtxState;
     }
 }

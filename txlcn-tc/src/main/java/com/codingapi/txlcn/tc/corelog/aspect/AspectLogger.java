@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.corelog.aspect;
 
-import com.codingapi.txlcn.tc.aspect.TransactionInfo;
+import com.codingapi.txlcn.tc.aspect.AspectInfo;
 
 /**
  * Description: 切面日志操作
@@ -30,9 +30,9 @@ public interface AspectLogger {
      *
      * @param groupId groupId
      * @param unitId unitId
-     * @param transactionInfo 切面信息
+     * @param aspectInfo 切面信息
      */
-    void trace(String groupId, String unitId, TransactionInfo transactionInfo);
+    void trace(String groupId, String unitId, AspectInfo aspectInfo);
 
     /**
      * 清理切面日志

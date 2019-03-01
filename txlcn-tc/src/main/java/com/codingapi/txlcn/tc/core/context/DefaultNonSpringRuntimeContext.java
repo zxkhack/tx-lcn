@@ -1,7 +1,7 @@
 package com.codingapi.txlcn.tc.core.context;
 
 import com.codingapi.txlcn.common.util.Transactions;
-import com.codingapi.txlcn.tc.aspect.Invocation;
+import com.codingapi.txlcn.tc.aspect.InvocationInfo;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.PatternMatchUtils;
@@ -34,15 +34,15 @@ public class DefaultNonSpringRuntimeContext implements NonSpringRuntimeContext {
     }
 
     @Override
-    public TransactionAttribute getTransactionAttribute(Invocation invocation) {
-        String unitId = Transactions.unitId(invocation.getMethod().toString());
-        if (!ClassUtils.isUserLevelMethod(invocation.getMethod())) {
+    public TransactionAttribute getTransactionAttribute(InvocationInfo invocationInfo) {
+        String unitId = Transactions.unitId(invocationInfo.getMethod().toString());
+        if (!ClassUtils.isUserLevelMethod(invocationInfo.getMethod())) {
             return null;
         }
 
         // Look for direct name match.
-        String methodName = invocation.getMethod().getName();
-        Map<Object, Object> attrs = MAP.get(methodName);
+        String methodName = invocationInfo.getMethod().getName();
+        Map<Object, Object> attrs = MAP.get(invocationInfo.methodId());
 
         if (attrs == null) {
             // Look for most specific name match.
@@ -53,7 +53,7 @@ public class DefaultNonSpringRuntimeContext implements NonSpringRuntimeContext {
                     attrs = MAP.get(mappedName);
                     bestNameMatch = mappedName;
                     MAP.put(unitId, attrs);
-                    MAP.put(methodName, attrs);
+                    MAP.put(invocationInfo.methodId(), attrs);
                 }
             }
         } else if (!MAP.containsKey(unitId)) {

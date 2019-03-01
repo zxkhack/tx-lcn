@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.core.mode.lcn;
 
-import com.codingapi.txlcn.tc.core.DTXLocalContext;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.TransactionResourceProxy;
 import com.codingapi.txlcn.tc.core.context.BranchContext;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +41,7 @@ public class LcnTransactionResourceProxy implements TransactionResourceProxy {
 
     @Override
     public Connection proxyConnection(DataSource dataSource) throws Throwable {
-        String groupId = DTXLocalContext.cur().getGroupId();
+        String groupId = BranchSession.cur().getGroupId();
         return globalContext.lcnConnection(groupId, dataSource, () -> {
             LcnConnectionProxy lcnConnectionProxy = new LcnConnectionProxy(dataSource.getConnection());
             lcnConnectionProxy.setAutoCommit(false);

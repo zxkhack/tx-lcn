@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.core.mode.txc;
 
-import com.codingapi.txlcn.tc.core.DTXLocalContext;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.SqlExecuteInterceptor;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.LockableSelect;
 import com.codingapi.txlcn.tc.support.p6spy.common.PreparedStatementInformation;
@@ -52,7 +52,7 @@ public class TxcJdbcEventListener extends P6spyJdbcEventListener {
         String sql = statementInformation.getSqlWithValues();
 
         // 当前业务链接
-        DTXLocalContext.cur().setResource(statementInformation.getStatement().getConnection());
+        BranchSession.cur().setResource(statementInformation.getStatement().getConnection());
 
         // 拦截处理
         try {

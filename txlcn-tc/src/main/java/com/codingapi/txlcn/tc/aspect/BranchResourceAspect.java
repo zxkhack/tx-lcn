@@ -31,21 +31,21 @@ import javax.sql.DataSource;
 @Aspect
 @Component
 @Slf4j
-public class DataSourceAspect implements Ordered {
+public class BranchResourceAspect implements Ordered {
 
     private final TxClientConfig txClientConfig;
 
-    private final DTXResourceWeaver dtxResourceWeaver;
+    private final BranchResourceWeaver branchResourceWeaver;
 
-    public DataSourceAspect(TxClientConfig txClientConfig, DTXResourceWeaver dtxResourceWeaver) {
+    public BranchResourceAspect(TxClientConfig txClientConfig, BranchResourceWeaver branchResourceWeaver) {
         this.txClientConfig = txClientConfig;
-        this.dtxResourceWeaver = dtxResourceWeaver;
+        this.branchResourceWeaver = branchResourceWeaver;
     }
 
 
     @Around("execution(* javax.sql.DataSource.getConnection(..))")
     public Object around(ProceedingJoinPoint point) throws Throwable {
-        return dtxResourceWeaver.getConnection((DataSource) point.getTarget());
+        return branchResourceWeaver.getConnection((DataSource) point.getTarget());
     }
 
 

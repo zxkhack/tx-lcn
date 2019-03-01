@@ -15,17 +15,14 @@
  */
 package com.codingapi.txlcn.tc.txmsg;
 
-import com.codingapi.txlcn.common.util.ApplicationInformation;
 import com.codingapi.txlcn.common.util.Transactions;
 import com.codingapi.txlcn.common.util.id.ModIdProvider;
+import com.codingapi.txlcn.tc.config.TxClientConfig;
 import com.codingapi.txlcn.txmsg.RpcClientInitializer;
 import com.codingapi.txlcn.txmsg.dto.TxManagerHost;
 import com.codingapi.txlcn.txmsg.exception.RpcException;
-import com.codingapi.txlcn.tc.config.TxClientConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
-import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -108,5 +105,10 @@ public class TMSearcher {
 
     public static void echoTmClusterSize() {
         log.info("TM cluster's size: {}", RELIABLE_MESSENGER.clusterSize());
+        if (RELIABLE_MESSENGER.clusterSize() < 1) {
+            log.error("Distributed transaction services will unreachable. Check whether the TM cluster size is suitable?");
+        } else if (RELIABLE_MESSENGER.clusterSize() < 2) {
+            log.warn("TM cluster's size (1) is unsuitable.");
+        }
     }
 }

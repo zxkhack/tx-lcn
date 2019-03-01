@@ -27,7 +27,7 @@ import java.io.Serializable;
  */
 @Data
 @NoArgsConstructor
-public class TransactionInfo implements Serializable {
+public class AspectInfo implements Serializable {
 
     /**
      * 事务执行器

@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.core.mode.txc.analy;
 
-import com.codingapi.txlcn.tc.core.DTXLocalContext;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.SqlExecuteInterceptor;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.TxcService;
@@ -69,7 +69,7 @@ public class TxcSqlExecuteInterceptor implements SqlExecuteInterceptor {
     @Override
     public void preUpdate(Update update) throws SQLException {
         // 获取线程传递参数
-        Connection connection = (Connection) DTXLocalContext.cur().getResource();
+        Connection connection = (Connection) BranchSession.cur().getResource();
 
         // Update相关数据准备
         List<String> columns = new ArrayList<>(update.getColumns().size());
@@ -102,7 +102,7 @@ public class TxcSqlExecuteInterceptor implements SqlExecuteInterceptor {
     @Override
     public void preDelete(Delete delete) throws SQLException {
         // 获取线程传递参数
-        Connection connection = (Connection) DTXLocalContext.cur().getResource();
+        Connection connection = (Connection) BranchSession.cur().getResource();
 
         // 获取Sql Table
         if (delete.getTables().size() == 0) {
@@ -141,7 +141,7 @@ public class TxcSqlExecuteInterceptor implements SqlExecuteInterceptor {
 
     @Override
     public void postInsert(StatementInformation statementInformation) throws SQLException {
-        Connection connection = (Connection) DTXLocalContext.cur().getResource();
+        Connection connection = (Connection) BranchSession.cur().getResource();
         Insert insert = (Insert) statementInformation.getAttachment();
         TableStruct tableStruct = globalContext.tableStruct(insert.getTable().getName(),
                 () -> tableStructAnalyser.analyse(connection, insert.getTable().getName()));
@@ -187,7 +187,7 @@ public class TxcSqlExecuteInterceptor implements SqlExecuteInterceptor {
         List<String> primaryKeys = new ArrayList<>();
         Table leftTable = (Table) plainSelect.getFromItem();
         List<SelectItem> selectItems = new ArrayList<>();
-        Connection connection = (Connection) DTXLocalContext.cur().getResource();
+        Connection connection = (Connection) BranchSession.cur().getResource();
 
         TableStruct leftTableStruct = globalContext.tableStruct(leftTable.getName(),
                 () -> tableStructAnalyser.analyse(connection, leftTable.getName()));

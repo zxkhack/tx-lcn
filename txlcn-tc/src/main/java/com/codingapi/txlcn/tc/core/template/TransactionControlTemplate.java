@@ -18,8 +18,8 @@ package com.codingapi.txlcn.tc.core.template;
 import com.codingapi.txlcn.common.exception.LcnBusinessException;
 import com.codingapi.txlcn.common.exception.TransactionException;
 import com.codingapi.txlcn.logger.TxLogger;
-import com.codingapi.txlcn.tc.aspect.TransactionInfo;
-import com.codingapi.txlcn.tc.core.DTXLocalContext;
+import com.codingapi.txlcn.tc.aspect.AspectInfo;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.check.DTXChecking;
 import com.codingapi.txlcn.tc.core.check.DTXExceptionHandler;
 import com.codingapi.txlcn.tc.core.context.BranchContext;
@@ -68,11 +68,11 @@ public class TransactionControlTemplate {
      *
      * @param groupId         groupId
      * @param unitId          unitId
-     * @param transactionInfo txTrace
+     * @param aspectInfo txTrace
      * @param transactionType transactionType
      * @throws TransactionException 创建group失败时抛出
      */
-    public void createGroup(String groupId, String unitId, TransactionInfo transactionInfo, String transactionType)
+    public void createGroup(String groupId, String unitId, AspectInfo aspectInfo, String transactionType)
             throws TransactionException {
         //创建事务组
         try {
@@ -82,7 +82,7 @@ public class TransactionControlTemplate {
             // 创建事务组消息
             reliableMessenger.createGroup(groupId);
             // 缓存发起方切面信息
-            aspectLogger.trace(groupId, unitId, transactionInfo);
+            aspectLogger.trace(groupId, unitId, aspectInfo);
         } catch (RpcException e) {
             // 通讯异常
             dtxExceptionHandler.handleCreateGroupMessageException(groupId, e);
@@ -99,16 +99,16 @@ public class TransactionControlTemplate {
      * @param groupId         groupId
      * @param unitId          unitId
      * @param transactionType transactionType
-     * @param transactionInfo txTrace
+     * @param aspectInfo txTrace
      * @throws TransactionException 加入事务组失败时抛出
      */
-    public void joinGroup(String groupId, String unitId, String transactionType, TransactionInfo transactionInfo)
+    public void joinGroup(String groupId, String unitId, String transactionType, AspectInfo aspectInfo)
             throws TransactionException {
         try {
             txLogger.txTrace(groupId, unitId, "join group > transaction type: {}", transactionType);
 
             reliableMessenger.joinGroup(
-                    groupId, unitId, transactionType, DTXLocalContext.transactionState(globalContext.transactionState(groupId)));
+                    groupId, unitId, transactionType, BranchSession.transactionState(globalContext.transactionState(groupId)));
 
             txLogger.txTrace(groupId, unitId, "join group message over.");
 
@@ -116,7 +116,7 @@ public class TransactionControlTemplate {
             dtxChecking.startDelayCheckingAsync(groupId, unitId, transactionType);
 
             // 缓存参与方切面信息
-            aspectLogger.trace(groupId, unitId, transactionInfo);
+            aspectLogger.trace(groupId, unitId, aspectInfo);
         } catch (RpcException e) {
             dtxExceptionHandler.handleJoinGroupMessageException(Arrays.asList(groupId, unitId, transactionType), e);
         } catch (LcnBusinessException e) {

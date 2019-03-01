@@ -16,7 +16,8 @@
 package com.codingapi.txlcn.tc.core;
 
 import com.codingapi.txlcn.common.exception.TransactionException;
-import com.codingapi.txlcn.tc.aspect.TransactionInfo;
+import com.codingapi.txlcn.tc.aspect.AspectInfo;
+import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.template.TransactionCleanupTemplate;
 import com.codingapi.txlcn.tc.core.template.TransactionControlTemplate;
 import com.codingapi.txlcn.tc.support.DTXUserControls;
@@ -62,12 +63,13 @@ public class DistributedTransactionManager implements TransactionManager {
     public void begin() throws SystemException {
         try {
             associateTransaction();
-            String groupId = DTXLocalContext.cur().getGroupId();
-            String unitId = DTXLocalContext.cur().getUnitId();
-            TransactionInfo transactionInfo = DTXLocalContext.cur().getTransactionInfo();
-            String transactionType = DTXLocalContext.cur().getTransactionType();
-            transactionControlTemplate.createGroup(groupId, unitId, transactionInfo, transactionType);
+            String groupId = BranchSession.cur().getGroupId();
+            String unitId = BranchSession.cur().getUnitId();
+            AspectInfo aspectInfo = BranchSession.cur().getAspectInfo();
+            String transactionType = BranchSession.cur().getTransactionType();
+            transactionControlTemplate.createGroup(groupId, unitId, aspectInfo, transactionType);
         } catch (TransactionException e) {
+            disassociateTransaction();
             throw new SystemException(e.getMessage());
         }
     }
