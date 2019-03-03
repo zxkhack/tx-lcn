@@ -17,6 +17,8 @@ package com.codingapi.txlcn.tm.cluster;
 
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
  * Description:
  * Date: 19-1-25 上午10:31
@@ -24,7 +26,8 @@ import lombok.Data;
  * @author ujued
  */
 @Data
-public class TMProperties {
+public class TMProperties implements Serializable {
+    private String id;
     private String host;
     private Integer httpPort;
     private Integer transactionPort;

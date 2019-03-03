@@ -44,6 +44,11 @@ public class TxManagerConfig {
     }
 
     /**
+     * TM id
+     */
+    private String id;
+
+    /**
      * manager host
      */
     private String host = "0.0.0.0";

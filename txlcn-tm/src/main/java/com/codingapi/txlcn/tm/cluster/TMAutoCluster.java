@@ -101,6 +101,7 @@ public class TMAutoCluster implements TxLcnInitializer {
         // 2. 保存TM 到快速存储
         if (StringUtils.hasText(txManagerConfig.getHost())) {
             TMProperties tmProperties = new TMProperties();
+            tmProperties.setId(txManagerConfig.getId());
             tmProperties.setHttpPort(ApplicationInformation.serverPort(serverProperties));
             tmProperties.setHost(txManagerConfig.getHost());
             tmProperties.setTransactionPort(txManagerConfig.getPort());
