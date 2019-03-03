@@ -23,6 +23,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -49,6 +50,7 @@ public class TxcSqlExecutorImpl implements TxcSqlExecutor {
     @Override
     public List<ModifiedRecord> updateSqlPreviousData(Connection connection, UpdateImageParams updateImageParams)
             throws SQLException {
+        Assert.notEmpty(updateImageParams.getPrimaryKeys(), "table must exists primary key(s).");
         // 前置镜像sql
         String beforeSql = SqlUtils.SELECT
                 + String.join(SqlUtils.SQL_COMMA_SEPARATOR, updateImageParams.getColumns())
