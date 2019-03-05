@@ -25,7 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description:
@@ -57,8 +59,8 @@ public class TxcTransactionCleanService implements TransactionCleanService {
             }
         } catch (TxcLogicException e) {
             @SuppressWarnings("unchecked")
-            List<StatementInfo> statementInfoList = (List<StatementInfo>) e.getAttachment();
-            tmReporter.reportTxcUndoException(groupId, unitId, statementInfoList);
+            Map<DataSource, List<StatementInfo>> statementInfoListMap = (Map<DataSource, List<StatementInfo>>) e.getAttachment();
+            tmReporter.reportTxcUndoException(groupId, unitId, statementInfoListMap);
             rethrowTxcException = true;
             log.debug("need compensation !");
         }

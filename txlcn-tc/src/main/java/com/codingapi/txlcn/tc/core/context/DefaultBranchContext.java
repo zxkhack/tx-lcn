@@ -16,18 +16,20 @@
 package com.codingapi.txlcn.tc.core.context;
 
 import com.codingapi.txlcn.common.exception.BranchContextException;
+import com.codingapi.txlcn.common.util.AopTargetUtils;
 import com.codingapi.txlcn.common.util.function.Supplier;
+import com.codingapi.txlcn.tc.aspect.InvocationInfo;
 import com.codingapi.txlcn.tc.config.TxClientConfig;
 import com.codingapi.txlcn.tc.core.mode.lcn.LcnConnectionProxy;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.PrimaryKeysProvider;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.TableStruct;
-import com.codingapi.txlcn.tc.aspect.InvocationInfo;
 import com.codingapi.txlcn.tracing.TracingContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,6 +49,8 @@ public class DefaultBranchContext implements BranchContext {
     private final AttachmentCache attachmentCache;
 
     private final List<PrimaryKeysProvider> primaryKeysProviders;
+
+    private Map<Integer, DataSource> modDataSourceMap = new HashMap<>();
 
     private final TxClientConfig clientConfig;
 
@@ -213,6 +217,36 @@ public class DefaultBranchContext implements BranchContext {
         if (!this.attachmentCache.containsKey(key)) {
             this.attachmentCache.attach(key, value);
         }
+    }
+
+    @Override
+    public DataSource getByConnection(String groupId, Connection connection) {
+        return this.attachmentCache.attachment(groupId, connection);
+    }
+
+    @Override
+    public void linkDataSource(String groupId, Connection connection, DataSource dataSource) {
+        this.attachmentCache.attach(groupId, connection, dataSource);
+    }
+
+    @Override
+    public void mapDataSources(List<DataSource> dataSources) {
+        if (Objects.isNull(dataSources)) {
+            log.warn("mod non exists javax.sql.DataSource");
+        }
+        dataSources.forEach(dataSource -> {
+            try {
+                DataSource ds = (DataSource) AopTargetUtils.getTarget(dataSource);
+                this.modDataSourceMap.put(ds.hashCode(), ds);
+            } catch (Exception e) {
+                throw new IllegalStateException(e);
+            }
+        });
+    }
+
+    @Override
+    public DataSource dataSource(Integer dataSource) {
+        return this.modDataSourceMap.get(dataSource);
     }
 
     /**

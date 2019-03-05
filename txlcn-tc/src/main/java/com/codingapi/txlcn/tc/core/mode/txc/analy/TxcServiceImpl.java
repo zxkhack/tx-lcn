@@ -34,8 +34,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 import org.springframework.util.DigestUtils;
 
+import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -129,9 +131,10 @@ public class TxcServiceImpl implements TxcService {
      * @param sqlType         SQL 类型
      * @throws TxcLogicException 业务异常
      */
-    private void resolveModifiedRecords(List<ModifiedRecord> modifiedRecords, int sqlType) throws TxcLogicException {
+    private void resolveModifiedRecords(Integer dataSource, List<ModifiedRecord> modifiedRecords, int sqlType) throws TxcLogicException {
 
         TableRecordList tableRecords = new TableRecordList();
+        tableRecords.setDataSource(dataSource);
         Set<String> lockIdSet = new HashSet<>();
 
         // Build reverse sql
@@ -192,7 +195,7 @@ public class TxcServiceImpl implements TxcService {
             throw new TxcLogicException(e);
         }
 
-        resolveModifiedRecords(modifiedRecords, SqlUtils.SQL_TYPE_UPDATE);
+        resolveModifiedRecords(currentDataSource(), modifiedRecords, SqlUtils.SQL_TYPE_UPDATE);
     }
 
     @Override
@@ -206,7 +209,7 @@ public class TxcServiceImpl implements TxcService {
             throw new TxcLogicException(e);
         }
 
-        resolveModifiedRecords(modifiedRecords, SqlUtils.SQL_TYPE_DELETE);
+        resolveModifiedRecords(currentDataSource(), modifiedRecords, SqlUtils.SQL_TYPE_DELETE);
     }
 
     @Override
@@ -247,6 +250,7 @@ public class TxcServiceImpl implements TxcService {
 
         // save to db
         TableRecordList tableRecords = new TableRecordList();
+        tableRecords.setDataSource(currentDataSource());
         tableRecords.getTableRecords().add(new TableRecord(insertImageParams.getTableName(), fieldCluster));
         saveUndoLog(BranchSession.cur().getGroupId(), BranchSession.cur().getUnitId(), SqlUtils.SQL_TYPE_INSERT, tableRecords);
     }
@@ -273,7 +277,7 @@ public class TxcServiceImpl implements TxcService {
     @Override
     public void undo(String groupId, String unitId) throws TxcLogicException {
         BranchSession.makeUnProxyConnection();
-        List<StatementInfo> statementInfoList = new ArrayList<>();
+        Map<DataSource, List<StatementInfo>> statementInfoListMap = new HashMap<>();
         try {
             List<UndoLogDO> undoLogDOList = txcLogHelper.getUndoLogByGroupAndUnitId(groupId, unitId);
 
@@ -281,25 +285,46 @@ public class TxcServiceImpl implements TxcService {
                 TableRecordList tableRecords = SqlUtils.blobToObject(undoLogDO.getRollbackInfo(), TableRecordList.class);
                 switch (undoLogDO.getSqlType()) {
                     case SqlUtils.SQL_TYPE_UPDATE:
-                        tableRecords.getTableRecords().forEach(tableRecord -> statementInfoList.add(UndoLogAnalyser.update(tableRecord)));
+                        tableRecords.getTableRecords().forEach(tableRecord ->
+                                addStatementInfo(statementInfoListMap, globalContext.dataSource(tableRecords.getDataSource()), UndoLogAnalyser.update(tableRecord)));
                         break;
                     case SqlUtils.SQL_TYPE_DELETE:
-                        tableRecords.getTableRecords().forEach(tableRecord -> statementInfoList.add(UndoLogAnalyser.delete(tableRecord)));
+                        tableRecords.getTableRecords().forEach(tableRecord ->
+                                addStatementInfo(statementInfoListMap, globalContext.dataSource(tableRecords.getDataSource()), UndoLogAnalyser.delete(tableRecord)));
                         break;
                     case SqlUtils.SQL_TYPE_INSERT:
-                        tableRecords.getTableRecords().forEach(tableRecord -> statementInfoList.add(UndoLogAnalyser.insert(tableRecord)));
+                        tableRecords.getTableRecords().forEach(tableRecord ->
+                                addStatementInfo(statementInfoListMap, globalContext.dataSource(tableRecords.getDataSource()), UndoLogAnalyser.insert(tableRecord)));
                         break;
                     default:
                         break;
                 }
             }
-            txcSqlExecutor.applyUndoLog(statementInfoList);
+            txcSqlExecutor.applyUndoLog(statementInfoListMap);
         } catch (SQLException e) {
             TxcLogicException exception = new TxcLogicException(e);
-            exception.setAttachment(statementInfoList);
+            exception.setAttachment(statementInfoListMap);
             throw exception;
         } finally {
             BranchSession.undoProxyStatus();
         }
+    }
+
+    private void addStatementInfo(Map<DataSource, List<StatementInfo>> map, DataSource dataSource, StatementInfo statementInfo) {
+        if (map.containsKey(dataSource)) {
+            map.get(dataSource).add(statementInfo);
+            return;
+        }
+        List<StatementInfo> statementInfoList = new LinkedList<>();
+        statementInfoList.add(statementInfo);
+        map.put(dataSource, statementInfoList);
+    }
+
+    private Integer currentDataSource() {
+        Connection connection = (Connection) BranchSession.cur().getResource();
+        Assert.notNull(connection, "cur connection must not null!");
+        DataSource dataSource = globalContext.getByConnection(BranchSession.cur().getGroupId(), connection);
+        Assert.notNull(dataSource, "associate javax.sql.DataSource must not null!");
+        return dataSource.hashCode();
     }
 }

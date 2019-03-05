@@ -15,13 +15,14 @@
  */
 package com.codingapi.txlcn.tc.core.mode.txc;
 
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import org.apache.commons.dbutils.QueryRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 /**
  * Description:
@@ -33,15 +34,8 @@ import javax.sql.DataSource;
 @ComponentScan
 public class TxcConfiguration {
 
-    /**
-     * Spring ApplicationContext at least one Primary java.sql.DataSource.
-     *
-     * @param dataSource java.sql.DataSource
-     * @return apache jdbc runner
-     */
     @Bean
-    @Primary
-    public QueryRunner queryRunner(DataSource dataSource) {
-        return new QueryRunner(dataSource);
+    public QueryRunner queryRunner() {
+        return new QueryRunner();
     }
 }

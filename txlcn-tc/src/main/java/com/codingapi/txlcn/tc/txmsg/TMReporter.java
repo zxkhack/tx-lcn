@@ -22,7 +22,9 @@ import com.codingapi.txlcn.txmsg.params.TxExceptionParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import javax.sql.DataSource;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description: 客户端上报Manager
@@ -85,13 +87,13 @@ public class TMReporter {
         }
     }
 
-    public void reportTxcUndoException(String groupId, String unitId, List<StatementInfo> statementInfoList) {
+    public void reportTxcUndoException(String groupId, String unitId, Map<DataSource, List<StatementInfo>> sMap) {
         TxExceptionParams exceptionParams = new TxExceptionParams();
         exceptionParams.setGroupId(groupId);
         exceptionParams.setUnitId(unitId);
         exceptionParams.setRegistrar(TxExceptionParams.TXC_UNDO_ERROR);
         exceptionParams.setTransactionState(0);
-        exceptionParams.setRemark(statementInfoList.toString());
+        exceptionParams.setRemark(sMap.toString());
         report(exceptionParams);
     }
 }

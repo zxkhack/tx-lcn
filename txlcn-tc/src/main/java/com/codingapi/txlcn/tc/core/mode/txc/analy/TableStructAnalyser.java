@@ -15,13 +15,10 @@
  */
 package com.codingapi.txlcn.tc.core.mode.txc.analy;
 
-import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.TableStruct;
 import org.apache.commons.dbutils.DbUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,13 +32,6 @@ import java.sql.SQLException;
  */
 @Component
 public class TableStructAnalyser {
-
-    private final DataSource dataSource;
-
-    @Autowired
-    public TableStructAnalyser(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
 
     public TableStruct analyse(Connection connection, String table) throws SQLException {
         ResultSet structRs = null;
@@ -67,20 +57,6 @@ public class TableStructAnalyser {
         return tableStruct;
     }
 
-    public TableStruct analyse(String table) throws SQLException {
-        Connection connection = null;
-        try {
-            BranchSession.makeUnProxyConnection();
-            connection = dataSource.getConnection();
-            connection.setAutoCommit(true);
-            return analyse(connection, table);
-        } finally {
-            BranchSession.undoProxyStatus();
-            DbUtils.close(connection);
-        }
-    }
-
-
     public boolean existsTable(Connection connection, String table) throws SQLException {
         ResultSet resultSet = null;
         try {
@@ -94,25 +70,5 @@ public class TableStructAnalyser {
             DbUtils.close(resultSet);
         }
         return false;
-    }
-
-    /**
-     * 存在数据表判断
-     *
-     * @param tableName tableName
-     * @return exists
-     * @throws  SQLException SQLException
-     */
-    public boolean existsTable(String tableName) throws SQLException {
-        Connection connection = null;
-        try {
-            BranchSession.makeUnProxyConnection();
-            connection = dataSource.getConnection();
-            connection.setAutoCommit(true);
-            return existsTable(connection, tableName);
-        } finally {
-            DbUtils.close(connection);
-            BranchSession.undoProxyStatus();
-        }
     }
 }

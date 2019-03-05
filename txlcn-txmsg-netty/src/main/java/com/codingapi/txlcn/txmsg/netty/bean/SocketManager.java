@@ -205,7 +205,7 @@ public class SocketManager {
         Set<String> keys =  appNames.keySet();
         for(String key:keys){
             AppInfo appInfo = appNames.get(key);
-            if(moduleName.equals(appInfo.getAppName())){
+            if(moduleName.equals(appInfo.getLabelName())){
                 return true;
             }
         }

@@ -15,6 +15,7 @@
  */
 package com.codingapi.txlcn.tc.core.mode.txc.analy;
 
+import com.codingapi.txlcn.tc.core.context.BranchContext;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.TxcSqlExecutor;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.*;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.util.SqlUtils;
@@ -25,9 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description: TXC相关的数据表操作
@@ -40,10 +43,13 @@ import java.util.List;
 @Slf4j
 public class TxcSqlExecutorImpl implements TxcSqlExecutor {
 
+    private final BranchContext branchContext;
+
     private final QueryRunner queryRunner;
 
     @Autowired
-    public TxcSqlExecutorImpl(QueryRunner queryRunner) {
+    public TxcSqlExecutorImpl(BranchContext branchContext, QueryRunner queryRunner) {
+        this.branchContext = branchContext;
         this.queryRunner = queryRunner;
     }
 
@@ -88,26 +94,29 @@ public class TxcSqlExecutorImpl implements TxcSqlExecutor {
     }
 
     @Override
-    public void applyUndoLog(List<StatementInfo> statementInfoList) throws SQLException {
-        Connection connection = null;
-        try {
-            connection = queryRunner.getDataSource().getConnection();
-            connection.setAutoCommit(false);
-            for (StatementInfo statementInfo : statementInfoList) {
-                log.debug("txc > Apply undo log. sql: {}, params: {}", statementInfo.getSql(), statementInfo.getParams());
-                queryRunner.update(connection, statementInfo.getSql(), statementInfo.getParams());
-            }
-            connection.commit();
-        } catch (SQLException e) {
-            if (connection != null) {
-                connection.rollback();
-            }
-            throw e;
-        } finally {
-            if (connection != null) {
-                connection.setAutoCommit(true);
-                DbUtils.close(connection);
+    public void applyUndoLog(Map<DataSource, List<StatementInfo>> sMap) throws SQLException {
+        for (Map.Entry<DataSource, List<StatementInfo>> entry : sMap.entrySet()) {
+            Connection connection = null;
+            try {
+                connection = entry.getKey().getConnection();
+                connection.setAutoCommit(false);
+                for (StatementInfo statementInfo : entry.getValue()) {
+                    log.debug("txc > Apply undo log. sql: {}, params: {}", statementInfo.getSql(), statementInfo.getParams());
+                    queryRunner.update(connection, statementInfo.getSql(), statementInfo.getParams());
+                }
+                connection.commit();
+            } catch (SQLException e) {
+                if (connection != null) {
+                    connection.rollback();
+                }
+                throw e;
+            } finally {
+                if (connection != null) {
+                    connection.setAutoCommit(true);
+                    DbUtils.close(connection);
+                }
             }
         }
+
     }
 }

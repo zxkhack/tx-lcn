@@ -21,8 +21,10 @@ import com.codingapi.txlcn.tc.core.mode.lcn.LcnConnectionProxy;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.TableStruct;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -164,4 +166,36 @@ public interface BranchContext extends NonSpringRuntimeContext {
      * @param value value
      */
     void cacheIfAbsentProperty(Object key, Object value);
+
+    /**
+     * conn获取DS
+     *
+     * @param connection
+     * @return
+     */
+    DataSource getByConnection(String groupId, Connection connection);
+
+    /**
+     * 映射Conn与DS
+     *
+     * @param groupId
+     * @param connection
+     * @param dataSource
+     */
+    void linkDataSource(String groupId, Connection connection, DataSource dataSource);
+
+    /**
+     * map all data sources
+     *
+     * @param dataSources
+     */
+    void mapDataSources(List<DataSource> dataSources);
+
+    /**
+     * 由javax.sql.DataSource的HashCode获取实例
+     *
+     * @param hashCode dataSource's hashCode
+     * @return dataSource
+     */
+    DataSource dataSource(Integer hashCode);
 }

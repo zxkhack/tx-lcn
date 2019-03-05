@@ -17,9 +17,11 @@ package com.codingapi.txlcn.tc.core.mode.txc.analy.def;
 
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.bean.*;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description: Txc模式相关数据操作
@@ -62,8 +64,8 @@ public interface TxcSqlExecutor {
     /**
      * 回滚undo_log
      *
-     * @param statementInfoList undo sql statements
+     * @param sMap undo sql statements
      * @throws SQLException execute error
      */
-    void applyUndoLog(List<StatementInfo> statementInfoList) throws SQLException;
+    void applyUndoLog(Map<DataSource, List<StatementInfo>> sMap) throws SQLException;
 }

@@ -29,5 +29,6 @@ import java.util.List;
  */
 @Data
 public class TableRecordList implements Serializable {
+    private Integer dataSource;
     private List<TableRecord> tableRecords = new ArrayList<>();
 }
