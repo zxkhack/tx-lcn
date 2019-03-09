@@ -105,6 +105,17 @@ public class BranchSession {
     }
 
     /**
+     * 打开会话
+     *
+     * @param branchSession branchSession
+     * @return branchSession
+     */
+    public static BranchSession openAs(BranchSession branchSession) {
+        localSession.set(branchSession);
+        return branchSession;
+    }
+
+    /**
      * 当前线程是否存在分支事务会话
      *
      * @return result

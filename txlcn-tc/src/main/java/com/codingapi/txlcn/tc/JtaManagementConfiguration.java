@@ -41,7 +41,7 @@ public class JtaManagementConfiguration extends AbstractTransactionManagementCon
     }
 
     @Bean
-    public JtaTransactionManager jtaTransactionManager(UserTransaction userTransaction, TransactionManager transactionManager,
+    public JtaTransactionManager transactionManager(UserTransaction userTransaction, TransactionManager transactionManager,
                                                        TransactionManagerCustomizers transactionManagerCustomizers) {
         JtaTransactionManager jtaTransactionManager = new JtaTransactionManager(userTransaction, transactionManager);
         if (Objects.nonNull(transactionManagerCustomizers)) {

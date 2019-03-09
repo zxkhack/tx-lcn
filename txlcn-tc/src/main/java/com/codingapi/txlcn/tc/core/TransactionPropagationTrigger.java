@@ -16,6 +16,7 @@
 package com.codingapi.txlcn.tc.core;
 
 import com.codingapi.txlcn.tc.core.context.BranchContext;
+import com.codingapi.txlcn.tc.core.jta.DistributedTransactionManager;
 import com.codingapi.txlcn.tracing.TracingContext;
 import com.codingapi.txlcn.tracing.TracingTrigger;
 import lombok.extern.slf4j.Slf4j;

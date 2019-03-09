@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingapi.txlcn.tc.core;
+package com.codingapi.txlcn.tc.core.jta;
 
 import com.codingapi.txlcn.common.exception.TransactionClearException;
+import com.codingapi.txlcn.tc.config.TxClientConfig;
 import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.template.TransactionCleanupTemplate;
 import com.codingapi.txlcn.tc.support.DTXUserControls;
@@ -43,7 +44,9 @@ public class BranchTransaction implements UserTransaction, Referenceable, Serial
 
     private final TransactionCleanupTemplate transactionCleanupTemplate;
 
-    private boolean isOriginalBranch() {
+    private final TxClientConfig clientConfig;
+
+    static boolean isOriginalBranch() {
         return BranchSession.cur().isOriginalBranch();
     }
 
@@ -59,21 +62,26 @@ public class BranchTransaction implements UserTransaction, Referenceable, Serial
     }
 
     @Autowired
-    public BranchTransaction(DistributedTransactionManager transactionManager, TransactionCleanupTemplate transactionCleanupTemplate) {
+    public BranchTransaction(DistributedTransactionManager transactionManager,
+                             TransactionCleanupTemplate transactionCleanupTemplate,
+                             TxClientConfig clientConfig) {
         this.transactionManager = transactionManager;
         this.transactionCleanupTemplate = transactionCleanupTemplate;
+        this.clientConfig = clientConfig;
     }
 
     public void begin() throws SystemException {
         log.debug("Branch transaction begin.");
+        BranchSession.cur().setSysTransactionState(Status.STATUS_ACTIVE);
+
         if (isOriginalBranch()) {
             transactionManager.begin();
         }
-        BranchSession.cur().setSysTransactionState(Status.STATUS_ACTIVE);
     }
 
     public void commit() throws SecurityException, IllegalStateException, HeuristicRollbackException,
             RollbackException, HeuristicMixedException, SystemException {
+
         BranchSession.cur().setSysTransactionState(Status.STATUS_COMMITTING);
         firstPhaseCleanup(1);
         if (isOriginalBranch()) {
@@ -91,26 +99,23 @@ public class BranchTransaction implements UserTransaction, Referenceable, Serial
     }
 
     public void setRollbackOnly() throws IllegalStateException {
-        log.debug("Global transaction rollback only.");
+        log.debug("Global transaction rollback only. [setRollbackOnly]");
         DTXUserControls.rollbackCurrentGroup();
     }
 
-    public int getStatus() throws SystemException {
-        log.debug("Get status from thread.");
+    public int getStatus() {
         int status = BranchSession.cur().getSysTransactionState();
         if (status == Status.STATUS_UNKNOWN) {
-            log.debug("Get status from TM");
             status = transactionManager.getStatus();
-            if (status == Status.STATUS_UNKNOWN) {
-                status = Status.STATUS_NO_TRANSACTION;
-            }
         }
         log.debug("Branch status: {}", status);
         return status;
     }
 
-    public void setTransactionTimeout(int i) throws SystemException {
-        throw new UnsupportedOperationException("unsupported transaction timeout.");
+    public void setTransactionTimeout(int i) {
+        long time = i * 1000;
+        clientConfig.applyDtxTime(time);
+        log.debug("Apply distributed transaction timeout: {}ms.", time);
     }
 
     @Override

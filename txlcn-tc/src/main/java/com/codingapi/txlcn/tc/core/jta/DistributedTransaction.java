@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingapi.txlcn.tc.core;
+package com.codingapi.txlcn.tc.core.jta;
 
 import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.common.exception.TransactionException;
@@ -21,6 +21,7 @@ import com.codingapi.txlcn.tc.aspect.AspectInfo;
 import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.template.TransactionCleanupTemplate;
 import com.codingapi.txlcn.tc.core.template.TransactionControlTemplate;
+import com.codingapi.txlcn.tc.support.DTXUserControls;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.transaction.*;
@@ -39,10 +40,20 @@ public class DistributedTransaction implements Transaction {
 
     private final TransactionCleanupTemplate transactionCleanupTemplate;
 
+    private BranchSession branchSession;
+
     DistributedTransaction(TransactionControlTemplate transactionControlTemplate,
                            TransactionCleanupTemplate transactionCleanupTemplate) {
         this.transactionControlTemplate = transactionControlTemplate;
         this.transactionCleanupTemplate = transactionCleanupTemplate;
+    }
+
+    public void setBranchSession(BranchSession branchSession) {
+        this.branchSession = branchSession;
+    }
+
+    public BranchSession getBranchSession() {
+        return this.branchSession;
     }
 
     private void allBranchesCleanup(int s) throws SystemException {
@@ -59,7 +70,7 @@ public class DistributedTransaction implements Transaction {
 
     @Override
     public void commit() throws SecurityException, IllegalStateException, SystemException {
-        log.info("original branch transaction send tx message to TM");
+        log.info("original branch commit transaction group.");
         BranchSession.cur().setSysTransactionState(Status.STATUS_PREPARED);
         allBranchesCleanup(1);
         BranchSession.cur().setSysTransactionState(Status.STATUS_COMMITTED);
@@ -81,7 +92,10 @@ public class DistributedTransaction implements Transaction {
     }
 
     @Override
-    public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException, SystemException {
+    public void registerSynchronization(Synchronization sync) throws IllegalStateException, SystemException {
+        if (BranchTransaction.isOriginalBranch()) {
+            return;
+        }
         try {
             BranchSession.cur().setSysTransactionState(Status.STATUS_COMMITTING);
             String groupId = BranchSession.cur().getGroupId();
@@ -96,6 +110,7 @@ public class DistributedTransaction implements Transaction {
 
     @Override
     public void rollback() throws IllegalStateException, SystemException {
+        log.info("original branch rollback transaction group.");
         BranchSession.cur().setSysTransactionState(Status.STATUS_ROLLING_BACK);
         allBranchesCleanup(0);
         BranchSession.cur().setSysTransactionState(Status.STATUS_ROLLEDBACK);
@@ -103,7 +118,7 @@ public class DistributedTransaction implements Transaction {
 
     @Override
     public void setRollbackOnly() throws IllegalStateException {
-        throw new UnsupportedOperationException("unsupported Transaction setRollbackOnly");
+        DTXUserControls.rollbackCurrentGroup();
     }
 
 }

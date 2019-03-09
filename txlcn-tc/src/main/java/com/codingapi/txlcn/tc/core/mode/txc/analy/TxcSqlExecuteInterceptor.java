@@ -35,6 +35,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.update.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -77,7 +78,7 @@ public class TxcSqlExecuteInterceptor implements SqlExecuteInterceptor {
         List<String> tables = new ArrayList<>(update.getTables().size());
         update.getColumns().forEach(column -> {
             column.setTable(update.getTables().get(0));
-            columns.add(column.getFullyQualifiedName());
+            columns.add(StringUtils.deleteAny(column.getFullyQualifiedName(), "`"));
         });
         for (Table table : update.getTables()) {
             tables.add(table.getName());

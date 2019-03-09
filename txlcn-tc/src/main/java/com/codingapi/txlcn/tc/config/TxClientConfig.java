@@ -72,7 +72,7 @@ public class TxClientConfig {
     /**
      * Distributed Transaction Time
      */
-    private long dtxTime;
+    private volatile long dtxTime;
 
     private long tmRpcTimeout;
 

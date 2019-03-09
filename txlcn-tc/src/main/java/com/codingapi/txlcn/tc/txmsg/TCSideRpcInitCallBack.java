@@ -95,9 +95,11 @@ public class TCSideRpcInitCallBack implements ClientInitCallBack, HeartbeatListe
                     rpcEnvStatusListeners.forEach(rpcEnvStatusListener -> rpcEnvStatusListener.onInitialized(remoteKey));
                     return;
                 }
-                log.error("TM[{}] exception. connect fail!", remoteKey);
+                log.error("Init TC fail. For TM business code.", msg.loadBean(Throwable.class));
+                System.exit(-1);
             } catch (RpcException e) {
-                log.error("Send init message exception: {}. connect fail!", e.getMessage());
+                log.error("Init Tc fail. For network.", e);
+                System.exit(-1);
             }
         }).start();
     }
