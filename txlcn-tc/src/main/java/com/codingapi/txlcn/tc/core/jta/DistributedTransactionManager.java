@@ -77,7 +77,7 @@ public class DistributedTransactionManager implements TransactionManager {
         try {
             if (TransactionUtils.isLocalNestingTransaction()) {
                 log.debug("begin a local transaction.");
-                associateTransaction(new LocalTransaction());
+                associateTransaction(new EmptyLocalTransaction());
                 return;
             }
             log.debug("begin a distributed transaction.");

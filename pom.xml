@@ -53,6 +53,7 @@
         <txlcn-hessian.version>4.0.38</txlcn-hessian.version>
         <txlcn-protostuff.version>1.6.0</txlcn-protostuff.version>
         <txlcn-kryo.version>4.0.0</txlcn-kryo.version>
+        <jta.version>1.0.2</jta.version>
 
         <txlcn-com.lmax.disruptor.version>3.4.2</txlcn-com.lmax.disruptor.version>
         <txlcn-commons-dbutils.version>1.7</txlcn-commons-dbutils.version>
@@ -263,6 +264,13 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-commons</artifactId>
                 <version>${txlcn-org.springframework.cloud.commons.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>javax.persistence</groupId>
+                <artifactId>persistence-api</artifactId>
+                <version>${jta.version}</version>
+                <scope>provided</scope>
             </dependency>
 
             <dependency>

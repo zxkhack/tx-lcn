@@ -51,5 +51,5 @@ public interface ManagerService {
      * @param machineId machineId
      * @throws TxManagerException TxManagerException
      */
-    void refreshMachines(long... machineId) throws TxManagerException;
+    void refreshMachineId(long machineId) throws TxManagerException;
 }

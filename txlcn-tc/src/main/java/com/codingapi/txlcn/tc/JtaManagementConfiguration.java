@@ -35,7 +35,7 @@ public class JtaManagementConfiguration extends AbstractTransactionManagementCon
         advisor.setTransactionAttributeSource(transactionAttributeSource());
         advisor.setAdvice(transactionInterceptor);
         if (this.enableTx != null) {
-            advisor.setOrder(this.enableTx.<Integer>getNumber("order"));
+            advisor.setOrder(this.enableTx.getNumber("order"));
         }
         return advisor;
     }

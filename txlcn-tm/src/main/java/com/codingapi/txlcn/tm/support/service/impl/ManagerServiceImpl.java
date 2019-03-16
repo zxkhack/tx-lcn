@@ -81,8 +81,8 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     @Override
-    public void refreshMachines(long... machineId) throws TxManagerException {
+    public void refreshMachineId(long machineId) throws TxManagerException {
         long timeout = managerConfig.getHeartTime() + 2000;
-        fastStorage.refreshMachines(timeout, machineId);
+        fastStorage.refreshMachineId(timeout, machineId);
     }
 }

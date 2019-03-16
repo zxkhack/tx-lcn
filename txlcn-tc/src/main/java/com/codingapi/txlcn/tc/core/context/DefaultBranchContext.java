@@ -87,15 +87,11 @@ public class DefaultBranchContext implements BranchContext {
 
     @Override
     public Collection<Object> lcnConnections(String groupId) throws BranchContextException {
-        Collection<Object> collections = attachmentCache.attachments(groupId).entrySet()
+        return attachmentCache.attachments(groupId).entrySet()
                 .stream()
                 .filter(entry -> entry.getKey() instanceof DataSource)
                 .map(Map.Entry::getValue)
                 .collect(Collectors.toSet());
-        if (collections.isEmpty()) {
-            throw new BranchContextException("non lcn connection.");
-        }
-        return collections;
     }
 
     @Override

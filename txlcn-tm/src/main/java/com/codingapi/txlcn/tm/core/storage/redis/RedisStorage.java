@@ -17,7 +17,6 @@ package com.codingapi.txlcn.tm.core.storage.redis;
 
 import com.codingapi.txlcn.common.exception.FastStorageException;
 import com.codingapi.txlcn.common.lock.DTXLocks;
-import com.codingapi.txlcn.common.util.ApplicationInformation;
 import com.codingapi.txlcn.tm.cluster.TMProperties;
 import com.codingapi.txlcn.tm.config.TxManagerConfig;
 import com.codingapi.txlcn.tm.core.storage.FastStorage;
@@ -258,18 +257,7 @@ public class RedisStorage implements FastStorage {
     }
 
     @Override
-    public void refreshMachines(long timeout, long... machines) {
-        try {
-            stringRedisTemplate.setEnableTransactionSupport(true);
-            stringRedisTemplate.multi();
-            for (long mac : machines) {
-                stringRedisTemplate.opsForValue().set(REDIS_MACHINE_ID_MAP_PREFIX + mac, "", timeout, TimeUnit.MILLISECONDS);
-            }
-            stringRedisTemplate.exec();
-        } catch (Throwable e) {
-            stringRedisTemplate.discard();
-        } finally {
-            stringRedisTemplate.setEnableTransactionSupport(false);
-        }
+    public void refreshMachineId(long timeout, long machineId) {
+        stringRedisTemplate.opsForValue().set(REDIS_MACHINE_ID_MAP_PREFIX + machineId, "", timeout, TimeUnit.MILLISECONDS);
     }
 }

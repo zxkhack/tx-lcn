@@ -183,5 +183,5 @@ public interface FastStorage {
      */
     long acquireMachineId(long machineMaxSize, long timeout) throws FastStorageException;
 
-    void refreshMachines(long timeout, long... machines);
+    void refreshMachineId(long timeout, long machineId);
 }

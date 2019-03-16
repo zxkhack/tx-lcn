@@ -21,6 +21,7 @@ import com.codingapi.txlcn.tc.core.TransactionCleanService;
 import com.codingapi.txlcn.tc.core.context.BranchContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
@@ -33,6 +34,7 @@ import java.util.Collection;
  * @author ujued
  */
 @Component
+@ConditionalOnMissingClass("javax.persistence.EntityManagerFactory")
 @Slf4j
 public class LcnTransactionCleanService implements TransactionCleanService {
 

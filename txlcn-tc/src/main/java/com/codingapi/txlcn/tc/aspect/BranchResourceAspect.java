@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.core.Ordered;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +31,7 @@ import javax.sql.DataSource;
  */
 @Aspect
 @Component
+@ConditionalOnMissingClass("javax.persistence.EntityManagerFactory")
 @Slf4j
 public class BranchResourceAspect implements Ordered {
 

@@ -17,7 +17,6 @@ package com.codingapi.txlcn.tm.core;
 
 
 import com.codingapi.txlcn.common.exception.TransactionException;
-import com.codingapi.txlcn.tm.core.storage.GroupProps;
 import com.codingapi.txlcn.tm.core.storage.TransactionUnit;
 
 import java.util.List;

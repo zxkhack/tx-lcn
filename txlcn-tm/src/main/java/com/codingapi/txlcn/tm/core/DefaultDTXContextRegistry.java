@@ -15,10 +15,9 @@
  */
 package com.codingapi.txlcn.tm.core;
 
+import com.codingapi.txlcn.common.exception.FastStorageException;
 import com.codingapi.txlcn.common.exception.TransactionException;
 import com.codingapi.txlcn.tm.core.storage.FastStorage;
-import com.codingapi.txlcn.common.exception.FastStorageException;
-import com.codingapi.txlcn.tm.core.storage.GroupProps;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -53,10 +52,6 @@ public class DefaultDTXContextRegistry implements DTXContextRegistry {
 
     @Override
     public DTXContext get(String groupId) throws TransactionException {
-        // test has group
-//        if (!fastStorage.containsGroup(groupId)) {
-//            throw new TransactionException("non this transaction group: " + groupId);
-//        }
         return new DefaultDTXContext(groupId, fastStorage);
     }
 
