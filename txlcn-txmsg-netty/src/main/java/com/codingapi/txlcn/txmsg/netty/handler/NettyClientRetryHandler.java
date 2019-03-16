@@ -76,7 +76,7 @@ public class NettyClientRetryHandler extends ChannelInboundHandlerAdapter {
 
         SocketAddress socketAddress = ctx.channel().remoteAddress();
         log.error("socketAddress:{} ", socketAddress);
-        NettyRpcClientInitializer.reConnect(socketAddress);
+        new Thread(() -> NettyRpcClientInitializer.reConnect(socketAddress)).start();
     }
 
 
@@ -89,7 +89,7 @@ public class NettyClientRetryHandler extends ChannelInboundHandlerAdapter {
             Thread.sleep(1000 * 15);
             log.error("current size:{}  ", size);
             log.error("try connect tx-manager:{} ", ctx.channel().remoteAddress());
-            NettyRpcClientInitializer.reConnect(ctx.channel().remoteAddress());
+            new Thread(() -> NettyRpcClientInitializer.reConnect(ctx.channel().remoteAddress())).start();
         }
         //发送数据包检测是否断开连接.
         ctx.writeAndFlush(heartCmd);

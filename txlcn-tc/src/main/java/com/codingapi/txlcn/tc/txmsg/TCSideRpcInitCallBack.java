@@ -96,10 +96,8 @@ public class TCSideRpcInitCallBack implements ClientInitCallBack, HeartbeatListe
                     return;
                 }
                 log.error("Init TC fail. For TM business code.", msg.loadBean(Throwable.class));
-                System.exit(-1);
             } catch (RpcException e) {
                 log.error("Init Tc fail. For network.", e);
-                System.exit(-1);
             }
         }).start();
     }

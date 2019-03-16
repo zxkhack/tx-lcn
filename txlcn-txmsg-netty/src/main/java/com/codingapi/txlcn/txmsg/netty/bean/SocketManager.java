@@ -33,6 +33,7 @@ import org.springframework.util.Assert;
 import java.net.SocketAddress;
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by lorne on 2017/6/30.
@@ -166,6 +167,7 @@ public class SocketManager {
 
 
     public boolean noConnect(SocketAddress socketAddress) {
+        System.out.println(socketAddress + "|" + channels.stream().map(Channel::remoteAddress).collect(Collectors.toList()));
         for (Channel channel : channels) {
             if (channel.remoteAddress().toString().equals(socketAddress.toString())) {
                 return false;

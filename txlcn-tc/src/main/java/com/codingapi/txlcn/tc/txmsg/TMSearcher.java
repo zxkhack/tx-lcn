@@ -104,11 +104,9 @@ public class TMSearcher {
     }
 
     public static void echoTmClusterSize() {
-        log.info("TM cluster's size: {}", RELIABLE_MESSENGER.clusterSize());
+        log.info("TM cluster's size: {}{}", RELIABLE_MESSENGER.clusterSize(), RELIABLE_MESSENGER.clusterSize() < 2 ? "(unsuitable)" : "");
         if (RELIABLE_MESSENGER.clusterSize() < 1) {
             log.error("Distributed transaction services will unreachable. Check whether the TM cluster size is suitable?");
-        } else if (RELIABLE_MESSENGER.clusterSize() < 2) {
-            log.warn("TM cluster's size (1) is unsuitable.");
         }
     }
 }
