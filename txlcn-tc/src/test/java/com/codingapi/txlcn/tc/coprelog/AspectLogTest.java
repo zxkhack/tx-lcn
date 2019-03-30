@@ -2,7 +2,7 @@ package com.codingapi.txlcn.tc.coprelog;
 
 import com.codingapi.txlcn.common.util.id.RandomUtils;
 import com.codingapi.txlcn.tc.MiniConfiguration;
-import com.codingapi.txlcn.tc.aspect.AspectInfo;
+import com.codingapi.txlcn.tc.aspect.info.AspectInfo;
 import com.codingapi.txlcn.tc.corelog.aspect.AspectLogger;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -18,8 +18,8 @@ package com.codingapi.txlcn.tm;
 import com.codingapi.txlcn.common.runner.TxLcnApplicationRunner;
 import com.codingapi.txlcn.common.util.ApplicationInformation;
 import com.codingapi.txlcn.common.util.id.ModIdProvider;
-import com.codingapi.txlcn.logger.TxLoggerConfiguration;
-import com.codingapi.txlcn.txmsg.MessageConfiguration;
+import com.codingapi.txlcn.logger.TransactionLoggerConfiguration;
+import com.codingapi.txlcn.txmsg.TransactionMessageConfiguration;
 import com.codingapi.txlcn.tm.config.TxManagerConfig;
 import com.codingapi.txlcn.tm.core.storage.FastStorage;
 import com.codingapi.txlcn.tm.core.storage.FastStorageProvider;
@@ -52,10 +52,10 @@ import java.util.concurrent.TimeUnit;
  */
 @Configuration
 @ComponentScan
-@Import({TxLoggerConfiguration.class, MessageConfiguration.class})
+@Import({TransactionLoggerConfiguration.class, TransactionMessageConfiguration.class})
 @EnableJpaRepositories("com.codingapi.txlcn.tm.support.db.jpa")
 @EntityScan("com.codingapi.txlcn.tm.support.db.domain")
-public class TMAutoConfiguration {
+public class TransactionManagerServerConfiguration {
 
     @Bean(destroyMethod = "shutdown")
     public ExecutorService executorService() {

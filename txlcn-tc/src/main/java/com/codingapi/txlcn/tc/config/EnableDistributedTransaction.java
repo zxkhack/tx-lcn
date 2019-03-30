@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.config;
 
-import com.codingapi.txlcn.tc.TCAutoConfiguration;
+import com.codingapi.txlcn.tc.BranchTransactionConfiguration;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
@@ -30,7 +30,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(value = {TCAutoConfiguration.class, DependenciesImportSelector.class})
+@Import(value = {BranchTransactionConfiguration.class, DependenciesImportSelector.class})
 public @interface EnableDistributedTransaction {
     /**
      * 是否允许TXC事务模式

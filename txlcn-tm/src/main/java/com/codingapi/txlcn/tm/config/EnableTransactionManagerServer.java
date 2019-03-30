@@ -1,6 +1,6 @@
 package com.codingapi.txlcn.tm.config;
 
-import com.codingapi.txlcn.tm.TMAutoConfiguration;
+import com.codingapi.txlcn.tm.TransactionManagerServerConfiguration;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;
@@ -14,6 +14,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 @Documented
-@Import(value = {TMAutoConfiguration.class})
+@Import(value = {TransactionManagerServerConfiguration.class})
 public @interface EnableTransactionManagerServer {
 }

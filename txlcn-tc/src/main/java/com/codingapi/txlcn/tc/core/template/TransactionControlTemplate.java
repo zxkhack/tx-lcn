@@ -18,7 +18,7 @@ package com.codingapi.txlcn.tc.core.template;
 import com.codingapi.txlcn.common.exception.LcnBusinessException;
 import com.codingapi.txlcn.common.exception.TransactionException;
 import com.codingapi.txlcn.logger.TxLogger;
-import com.codingapi.txlcn.tc.aspect.AspectInfo;
+import com.codingapi.txlcn.tc.aspect.info.AspectInfo;
 import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.check.DTXChecking;
 import com.codingapi.txlcn.tc.core.TransactionControlExceptionHandler;

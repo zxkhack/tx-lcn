@@ -16,7 +16,7 @@
 package com.codingapi.txlcn.tc.core.jta;
 
 import com.codingapi.txlcn.common.exception.TransactionException;
-import com.codingapi.txlcn.tc.aspect.AspectInfo;
+import com.codingapi.txlcn.tc.aspect.info.AspectInfo;
 import com.codingapi.txlcn.tc.config.TxClientConfig;
 import com.codingapi.txlcn.tc.core.TransactionUtils;
 import com.codingapi.txlcn.tc.core.context.BranchSession;

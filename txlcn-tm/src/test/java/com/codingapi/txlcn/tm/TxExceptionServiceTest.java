@@ -20,7 +20,7 @@ import java.util.List;
  * @date 2019-02-14 14:28
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TMApplication.class)
+@SpringBootTest(classes = TransactionManagerServerApplication.class)
 @ActiveProfiles("meetzy")
 public class TxExceptionServiceTest {
     @Autowired

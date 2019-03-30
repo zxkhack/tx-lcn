@@ -1,5 +1,8 @@
 package com.codingapi.txlcn.common.util.id;
 
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+
 /**
  * Description:
  * Date: 2/1/19
@@ -17,16 +20,21 @@ public class DefaultIdGen implements IdGen {
 
     private int machineOffset;
 
+    private int timeOffset;
+
     private long seq;
 
     private int seqLen;
 
     private long lastTime;
 
+    private ByteBuffer byteBuffer = ByteBuffer.allocate(12);
+
     public DefaultIdGen(int seqLen, long machineId) {
         this.seqLen = seqLen;
         this.machineOffset = seqLen;
         this.machineId = machineId;
+        this.timeOffset = 46;
     }
 
     @Override
@@ -46,10 +54,32 @@ public class DefaultIdGen implements IdGen {
         }
 
         lastTime = curTime;
+        long time = curTime - START_TIME;
 
-        long seqWithMachine = (machineId << machineOffset & Long.MAX_VALUE) | seq;
+        long seqWithMachine = (time << timeOffset) | (machineId << machineOffset) | seq;
 
-        return Long.toHexString((curTime - START_TIME) ^ 9527) + Long.toHexString(seqWithMachine ^ 9527);
+        return new BigInteger(bytes(seqWithMachine, (int) ((time >> 18) & 16777215))).toString(16);
+    }
+
+    private synchronized byte[] bytes(long l, int o) {
+        byteBuffer.clear();
+        for (int i = 0; i < 8; i++) {
+            byte b = (byte) (l >> (i * 8) & 255);
+            byteBuffer.put(b);
+        }
+        byteBuffer.put((byte) (o & 255));
+        byteBuffer.put((byte) ((o >> 8) & 255));
+        byteBuffer.put((byte) (o >> 16 & 255));
+        byteBuffer.put((byte) (o >> 24 & 255));
+        byteBuffer.flip();
+        byte[] bs = new byte[11];
+        byteBuffer.get(bs);
+        for (int i = 0; i < bs.length / 2; i++) {
+            byte temp = bs[i];
+            bs[i] = bs[bs.length - 1 - i];
+            bs[bs.length - 1 - i] = temp;
+        }
+        return bs;
     }
 
     private long tilNextMillis() {

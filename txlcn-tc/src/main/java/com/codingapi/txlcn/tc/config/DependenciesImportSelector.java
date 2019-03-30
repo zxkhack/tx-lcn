@@ -46,7 +46,7 @@ public class DependenciesImportSelector implements ImportSelector {
                         importingClassMetadata.getAnnotationAttributes(EnableDistributedTransaction.class.getName()))
                         .get("enableTxc").toString());
         List<String> importClasses = new ArrayList<>();
-        importClasses.add("com.codingapi.txlcn.txmsg.MessageConfiguration");
+        importClasses.add("com.codingapi.txlcn.txmsg.TransactionMessageConfiguration");
         if (enabledTxc) {
             importClasses.add(TxcConfiguration.class.getName());
         }

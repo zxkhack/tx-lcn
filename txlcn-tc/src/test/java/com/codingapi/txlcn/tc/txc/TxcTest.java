@@ -16,7 +16,7 @@
 package com.codingapi.txlcn.tc.txc;
 
 import com.codingapi.txlcn.tc.MiniConfiguration;
-import com.codingapi.txlcn.tc.TCAutoConfiguration;
+import com.codingapi.txlcn.tc.BranchTransactionConfiguration;
 import org.apache.commons.dbutils.QueryRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +34,7 @@ import java.util.Arrays;
  * @author ujued
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {MiniConfiguration.class, TCAutoConfiguration.class})
+@SpringBootTest(classes = {MiniConfiguration.class, BranchTransactionConfiguration.class})
 public class TxcTest {
 
     @Autowired

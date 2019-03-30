@@ -12,7 +12,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author ujued
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {MiniConfiguration.class, TCAutoConfiguration.class})
+@SpringBootTest(classes = {MiniConfiguration.class, BranchTransactionConfiguration.class})
 public class RunTest {
 
     @Test

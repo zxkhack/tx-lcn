@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingapi.txlcn.tc.aspect;
+package com.codingapi.txlcn.tc.aspect.info;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

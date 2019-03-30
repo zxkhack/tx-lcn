@@ -20,6 +20,7 @@ package com.codingapi.txlcn.tc.annotation;
  * Date: 19-1-11 下午4:21
  *
  * @author ujued
+ * @deprecated 使用 Spring @Transactional
  */
 @Deprecated
 public enum DTXPropagation {
@@ -34,16 +35,15 @@ public enum DTXPropagation {
     SUPPORTS;
 
 
-
-    public static DTXPropagation parser(String code){
-        switch (code){
-            case "REQUIRED":{
+    public static DTXPropagation parser(String code) {
+        switch (code) {
+            case "REQUIRED": {
                 return REQUIRED;
             }
-            case "SUPPORTS":{
+            case "SUPPORTS": {
                 return SUPPORTS;
             }
-            default:{
+            default: {
                 return REQUIRED;
             }
         }

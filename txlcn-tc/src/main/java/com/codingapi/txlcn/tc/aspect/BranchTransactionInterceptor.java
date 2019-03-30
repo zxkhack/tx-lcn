@@ -15,6 +15,8 @@
  */
 package com.codingapi.txlcn.tc.aspect;
 
+import com.codingapi.txlcn.tc.aspect.info.AspectInfo;
+import com.codingapi.txlcn.tc.aspect.info.InvocationInfo;
 import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.context.NonSpringRuntimeContext;
 import com.codingapi.txlcn.tc.core.context.BranchContext;

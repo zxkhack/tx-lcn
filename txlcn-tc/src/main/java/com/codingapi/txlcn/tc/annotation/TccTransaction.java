@@ -19,7 +19,7 @@ import java.lang.annotation.*;
 
 /**
  * @author 侯存路 2018/12/3
- *
+ * @deprecated 使用Spring @Transactional, com.codingapi.txlcn.tc.annotation.TransactionAttribute
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

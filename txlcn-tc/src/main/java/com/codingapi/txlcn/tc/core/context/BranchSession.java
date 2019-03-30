@@ -16,7 +16,7 @@
 package com.codingapi.txlcn.tc.core.context;
 
 
-import com.codingapi.txlcn.tc.aspect.AspectInfo;
+import com.codingapi.txlcn.tc.aspect.info.AspectInfo;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 

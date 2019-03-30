@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.codingapi.txlcn.tm;
+package com.codingapi.txlcn.tracing;
 
-import com.codingapi.txlcn.tm.support.TxLcnManagerBanner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
 /**
  * Description:
- * Company: CodingApi
- * Date: 2018/11/29
+ * Date: 19-1-28 下午4:57
  *
- * @author lorne
+ * @author ujued
  */
-@SpringBootApplication
-public class TMApplication {
+@Configuration
+@ComponentScan
+public class TransactionTracingConfiguration {
 
-    public static void main(String[] args) {
-        SpringApplication springApplication = new SpringApplication(TMApplication.class);
-        springApplication.setBanner(new TxLcnManagerBanner());
-        springApplication.run(args);
-    }
 }

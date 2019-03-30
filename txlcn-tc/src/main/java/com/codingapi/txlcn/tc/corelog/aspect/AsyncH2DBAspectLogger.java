@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.corelog.aspect;
 
-import com.codingapi.txlcn.tc.aspect.AspectInfo;
+import com.codingapi.txlcn.tc.aspect.info.AspectInfo;
 import com.codingapi.txlcn.common.exception.SerializerException;
 import com.codingapi.txlcn.common.util.serializer.SerializerContext;
 import lombok.extern.slf4j.Slf4j;

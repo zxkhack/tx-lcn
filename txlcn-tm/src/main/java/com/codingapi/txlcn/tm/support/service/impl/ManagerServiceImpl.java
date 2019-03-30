@@ -68,7 +68,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public long machineIdSync() throws TxManagerException {
-        long machineMaxSize = ~(-1L << (64 - 1 - managerConfig.getSeqLen())) - 1;
+        long machineMaxSize = ~(-1L << (64 - 18 - managerConfig.getSeqLen())) - 1;
         long timeout = managerConfig.getHeartTime() + 2000;
         long id;
         try {

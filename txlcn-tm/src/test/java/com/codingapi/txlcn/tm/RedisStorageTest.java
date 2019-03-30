@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TMApplication.class)
+@SpringBootTest(classes = TransactionManagerServerApplication.class)
 public class RedisStorageTest {
 
 

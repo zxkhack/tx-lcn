@@ -15,9 +15,6 @@
  */
 package com.codingapi.txlcn.tc.core.context;
 
-import com.codingapi.txlcn.common.util.function.Supplier;
-
-import javax.sql.DataSource;
 import java.util.Map;
 
 /**

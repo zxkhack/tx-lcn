@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Configuration;
  */
 @ComponentScan
 @Configuration
-public class TxLoggerConfiguration {
+public class TransactionLoggerConfiguration {
 
     @Configuration
     @ConditionalOnProperty(name = "tx-lcn.logger.enabled", havingValue = "true")

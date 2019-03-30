@@ -18,7 +18,7 @@ package com.codingapi.txlcn.tc.core.context;
 import com.codingapi.txlcn.common.exception.BranchContextException;
 import com.codingapi.txlcn.common.util.AopTargetUtils;
 import com.codingapi.txlcn.common.util.function.Supplier;
-import com.codingapi.txlcn.tc.aspect.InvocationInfo;
+import com.codingapi.txlcn.tc.aspect.info.InvocationInfo;
 import com.codingapi.txlcn.tc.config.TxClientConfig;
 import com.codingapi.txlcn.tc.core.mode.lcn.LcnConnectionProxy;
 import com.codingapi.txlcn.tc.core.mode.txc.analy.def.PrimaryKeysProvider;

@@ -37,7 +37,7 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 @Slf4j
 @Data
-public class MessageConfiguration {
+public class TransactionMessageConfiguration {
 
 
     @Bean

@@ -15,7 +15,7 @@
  */
 package com.codingapi.txlcn.tc.corelog.aspect;
 
-import com.codingapi.txlcn.tc.aspect.AspectInfo;
+import com.codingapi.txlcn.tc.aspect.info.AspectInfo;
 
 /**
  * Description: 切面日志操作

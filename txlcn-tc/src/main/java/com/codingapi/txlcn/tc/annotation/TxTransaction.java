@@ -21,6 +21,8 @@ import java.lang.annotation.*;
 
 /**
  * Created by lorne on 2017/6/26.
+ *
+ * @deprecated 使用Spring @Transactional, com.codingapi.txlcn.tc.annotation.TransactionAttribute
  */
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)

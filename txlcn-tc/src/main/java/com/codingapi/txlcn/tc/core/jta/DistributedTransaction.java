@@ -17,7 +17,7 @@ package com.codingapi.txlcn.tc.core.jta;
 
 import com.codingapi.txlcn.common.exception.TransactionClearException;
 import com.codingapi.txlcn.common.exception.TransactionException;
-import com.codingapi.txlcn.tc.aspect.AspectInfo;
+import com.codingapi.txlcn.tc.aspect.info.AspectInfo;
 import com.codingapi.txlcn.tc.core.context.BranchSession;
 import com.codingapi.txlcn.tc.core.template.TransactionCleanupTemplate;
 import com.codingapi.txlcn.tc.core.template.TransactionControlTemplate;
@@ -70,7 +70,7 @@ public class DistributedTransaction implements Transaction {
 
     @Override
     public void commit() throws SecurityException, IllegalStateException, SystemException {
-        log.info("original branch commit transaction group.");
+        log.debug("original branch commit transaction group.");
         BranchSession.cur().setSysTransactionState(Status.STATUS_PREPARED);
         allBranchesCleanup(1);
         BranchSession.cur().setSysTransactionState(Status.STATUS_COMMITTED);
@@ -110,7 +110,7 @@ public class DistributedTransaction implements Transaction {
 
     @Override
     public void rollback() throws IllegalStateException, SystemException {
-        log.info("original branch rollback transaction group.");
+        log.debug("original branch rollback transaction group.");
         BranchSession.cur().setSysTransactionState(Status.STATUS_ROLLING_BACK);
         allBranchesCleanup(0);
         BranchSession.cur().setSysTransactionState(Status.STATUS_ROLLEDBACK);

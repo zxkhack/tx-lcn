@@ -17,7 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author ujued
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = TMApplication.class)
+@SpringBootTest(classes = TransactionManagerServerApplication.class)
 public class TestFastStorage {
 
     @Autowired

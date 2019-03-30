@@ -17,6 +17,8 @@ package com.codingapi.txlcn.tc.annotation;
 
 /**
  * create by lorne on 2018/1/25
+ *
+ * @deprecated 使用Spring @Transactional, com.codingapi.txlcn.tc.annotation.TransactionAttribute
  */
 @Deprecated
 public interface ITxTransaction {
