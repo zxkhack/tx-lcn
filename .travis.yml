@@ -4,7 +4,7 @@ jdk: openjdk8
 
 branches:
   only:
-  - lorne
+  - dev
 
 script:
 - mvn cobertura:cobertura -P travis
