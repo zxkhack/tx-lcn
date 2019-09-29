@@ -276,80 +276,52 @@
     </dependencyManagement>
 
 
-    <licenses>
-        <license>
-            <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-        </license>
-    </licenses>
-
-    <developers>
-        <developer>
-            <name>wangliang</name>
-            <email>wangliang@codingapi.com</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-
-        <developer>
-            <name>jingyakun</name>
-            <email>jingyakun@codingapi.com</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-
-        <developer>
-            <name>houcunlu</name>
-            <email>houcunlu@codingapi.com</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-
-        <developer>
-            <name>yinxue</name>
-            <email>yinxue@codingapi.com</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-
-        <developer>
-            <name>zhuyu</name>
-            <email>zhuyu@codingapi.com</email>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>+8</timezone>
-        </developer>
-
-
-    </developers>
-
-    <scm>
-        <connection>scm:git:https://github.com/codingapi/tx-lcn.git</connection>
-        <developerConnection>scm:git:https://github.com/codingapi/tx-lcn.git</developerConnection>
-        <url>https://github.com/codingapi/tx-lcn</url>
-        <tag>v${project.version}</tag>
-    </scm>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
+    <!-- 指定Maven仓库 -->
+    <repositories>
         <repository>
-            <id>ossrh</id>
-            <name>Maven Central Staging Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>myRepository</id>
+            <name>local private nexus</name>
+            <url>http://192.168.1.75:8081/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
+    </repositories>
+
+
+    <!-- 指定maven plugin仓库 -->
+    <pluginRepositories>
+        <pluginRepository>
+            <id>myPluginRepository</id>
+            <name>local private nexus</name>
+            <url>http://192.168.1.75:8081/nexus/content/groups/public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+
+    <!--发布到新的库 -->
+    <distributionManagement>
+        <repository>
+            <id>nexus-releases</id>
+            <name>Deploy Server</name>
+            <url>http://192.168.1.75:8081/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>nexus-snapshots</id>
+            <url>http://192.168.1.75:8081/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+
     </distributionManagement>
+
 
     <build>
         <plugins>
@@ -378,17 +350,7 @@
             </plugin>
 
 
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>${nexus.staging.maven.plugin}</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
+
 
             <!-- 手动打包时，将下面的plugin注释掉 -->
 
